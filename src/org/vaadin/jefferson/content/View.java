@@ -15,6 +15,9 @@
  */
 package org.vaadin.jefferson.content;
 
+import com.vaadin.ui.ComponentContainer;
+import com.vaadin.ui.CssLayout;
+
 /**
  * A composite {@link UIElement}.
  * 
@@ -27,5 +30,14 @@ public class View extends UIElement {
     public View(String name, UIElement... children) {
         super(name);
         this.children = children;
+    }
+
+    public UIElement[] getChildren() {
+        return children;
+    }
+
+    @Override
+    public Class<? extends ComponentContainer> getDefault() {
+        return CssLayout.class;
     }
 }

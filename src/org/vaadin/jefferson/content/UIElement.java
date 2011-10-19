@@ -15,6 +15,8 @@
  */
 package org.vaadin.jefferson.content;
 
+import com.vaadin.ui.Component;
+
 /**
  * A UI component.
  * 
@@ -22,7 +24,24 @@ package org.vaadin.jefferson.content;
  */
 public abstract class UIElement {
 
+    private final String name;
+    private Component rendition;
+
     public UIElement(String name) {
-        // TODO Auto-generated constructor stub
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public abstract Class<? extends Component> getDefault();
+
+    public void setComponent(Component rendition) {
+        this.rendition = rendition;
+    }
+
+    public Component getComponent() {
+        return rendition;
     }
 }

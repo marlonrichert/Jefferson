@@ -15,10 +15,17 @@
  */
 package org.vaadin.jefferson.content;
 
+import com.vaadin.ui.Component;
+import com.vaadin.ui.NativeSelect;
+
 public class SelectionControl extends Control {
 
     public SelectionControl(String name) {
         super(name);
     }
 
+    @Override
+    public Class<? extends Component> getDefault() {
+        return NativeSelect.class;
+    }
 }

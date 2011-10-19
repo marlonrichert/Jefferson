@@ -15,7 +15,7 @@
     <init-param>
       <description>Vaadin application class to start</description>
       <param-name>application</param-name>
-      <param-value>org.vaadin.jefferson.JeffersonDemo</param-value>
+      <param-value>org.vaadin.jefferson.demo.JeffersonDemo</param-value>
     </init-param>
   </servlet>
   <servlet-mapping>

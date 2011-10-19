@@ -15,9 +15,17 @@
  */
 package org.vaadin.jefferson.content;
 
+import com.vaadin.ui.Component;
+import com.vaadin.ui.Label;
+
 public class LabelControl extends Control {
 
     public LabelControl(String name) {
         super(name);
+    }
+
+    @Override
+    public Class<? extends Component> getDefault() {
+        return Label.class;
     }
 }

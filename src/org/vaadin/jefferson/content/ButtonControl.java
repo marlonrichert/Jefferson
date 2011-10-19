@@ -15,10 +15,17 @@
  */
 package org.vaadin.jefferson.content;
 
+import com.vaadin.ui.Component;
+import com.vaadin.ui.NativeButton;
+
 public class ButtonControl extends Control {
 
     public ButtonControl(String name) {
         super(name);
     }
 
+    @Override
+    public Class<? extends Component> getDefault() {
+        return NativeButton.class;
+    }
 }
