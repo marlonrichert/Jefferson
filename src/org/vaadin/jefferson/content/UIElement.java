@@ -23,9 +23,8 @@ import com.vaadin.ui.Component;
  * @author marlon
  */
 public abstract class UIElement {
-
     private final String name;
-    private Component rendition;
+    private Component component;
 
     public UIElement(String name) {
         this.name = name;
@@ -37,11 +36,11 @@ public abstract class UIElement {
 
     public abstract Class<? extends Component> getDefault();
 
-    public void setComponent(Component rendition) {
-        this.rendition = rendition;
+    public void setComponent(Component component) {
+        this.component = component;
     }
 
     public Component getComponent() {
-        return rendition;
+        return this.component;
     }
 }

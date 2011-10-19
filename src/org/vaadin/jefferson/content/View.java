@@ -25,7 +25,7 @@ import com.vaadin.ui.CssLayout;
  */
 public class View extends UIElement {
 
-    private final UIElement[] children;
+    private UIElement[] children;
 
     public View(String name, UIElement... children) {
         super(name);
@@ -34,6 +34,10 @@ public class View extends UIElement {
 
     public UIElement[] getChildren() {
         return children;
+    }
+
+    public void setChildren(UIElement... children) {
+        this.children = children;
     }
 
     @Override

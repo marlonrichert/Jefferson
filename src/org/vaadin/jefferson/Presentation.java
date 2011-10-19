@@ -15,53 +15,97 @@
  */
 package org.vaadin.jefferson;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.vaadin.jefferson.content.UIElement;
 import org.vaadin.jefferson.content.View;
 
+import com.vaadin.tools.ReflectTools;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentContainer;
 
 public class Presentation {
 
-    private final Map<String, Class<? extends Component>> nameRules = new HashMap<String, Class<? extends Component>>();
-    private final Map<Class<? extends UIElement>, Class<? extends Component>> typeRules = new HashMap<Class<? extends UIElement>, Class<? extends Component>>();
+    private final Map<String, Class<? extends Component>> nameClasses = new HashMap<String, Class<? extends Component>>();
+    private final Map<Class<? extends UIElement>, Class<? extends Component>> typeClasses = new HashMap<Class<? extends UIElement>, Class<? extends Component>>();
+    private final Map<Class<? extends UIElement>, String> typeMethods = new HashMap<Class<? extends UIElement>, String>();
+    private final Map<String, String> nameMethods = new HashMap<String, String>();
+
+    private Presenter presenter;
+
+    public Presentation() {
+        this(new Presenter() {
+            @Override
+            public void register(UIElement content, Component component) {
+                // does nothing
+            }
+        });
+    }
+
+    public Presentation(Presenter presenter) {
+        this.presenter = presenter;
+    }
+
+    public void setPresenter(Presenter presenter) {
+        this.presenter = presenter;
+    }
 
     public void define(String name, Class<? extends Component> rendition) {
-        nameRules.put(name, rendition);
+        nameClasses.put(name, rendition);
     }
 
     public void define(Class<? extends UIElement> type,
             Class<? extends Component> rendition) {
-        typeRules.put(type, rendition);
+        typeClasses.put(type, rendition);
+    }
+
+    public void define(String name, String init) {
+        nameMethods.put(name, init);
+    }
+
+    public void define(Class<? extends UIElement> type, String init) {
+        typeMethods.put(type, init);
     }
 
     public Component render(UIElement content) throws InstantiationException,
-            IllegalAccessException {
-        Class<? extends Component> rendition1 = nameRules
-                .get(content.getName());
-        if (rendition1 == null) {
-            rendition1 = typeRules.get(content.getClass());
-            if (rendition1 == null) {
-                rendition1 = content.getDefault();
+            IllegalAccessException, InvocationTargetException {
+        String name = content.getName();
+        Class<? extends UIElement> type = content.getClass();
+
+        Class<? extends Component> rendition = nameClasses.get(name);
+        if (rendition == null) {
+            rendition = typeClasses.get(type);
+            if (rendition == null) {
+                rendition = content.getDefault();
             }
         }
-        Class<? extends Component> rendition = rendition1;
         Component component = rendition.newInstance();
-        String name = content.getName();
+
+        init(content, component, typeMethods.get(type));
+        init(content, component, nameMethods.get(name));
 
         component.addStyleName(name);
-        component.setCaption(name);
-        content.setComponent(component);
-
         if (content instanceof View) {
             for (UIElement child : ((View) content).getChildren()) {
                 ((ComponentContainer) component).addComponent(render(child));
             }
         }
 
+        content.setComponent(component);
+        presenter.register(content, component);
+
         return component;
+    }
+
+    protected void init(UIElement content, Component component,
+            String methodName) throws IllegalAccessException,
+            InvocationTargetException {
+        if (methodName != null) {
+            ReflectTools.findMethod(getClass(), methodName, UIElement.class,
+                    Component.class).invoke(Presentation.this, content,
+                    component);
+        }
     }
 }

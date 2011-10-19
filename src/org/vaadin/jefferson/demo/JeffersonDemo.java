@@ -15,130 +15,52 @@
  */
 package org.vaadin.jefferson.demo;
 
-import java.util.Iterator;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.vaadin.jefferson.Presentation;
-import org.vaadin.jefferson.content.ButtonControl;
-import org.vaadin.jefferson.content.LabelControl;
-import org.vaadin.jefferson.content.SelectionControl;
 import org.vaadin.jefferson.content.UIElement;
-import org.vaadin.jefferson.content.View;
 
 import com.vaadin.Application;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.data.Property;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.Table;
+import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.Window;
 
 public class JeffersonDemo extends Application {
+    private final Map<String, String> propertyCaptions = new HashMap<String, String>();
+    private final Map<String, String> propertyValues = new HashMap<String, String>();
+
+    public JeffersonDemo() {
+        propertyCaptions.put("max", "Greater value of assets and debit");
+        propertyCaptions.put("date", "Filed for bankruptcy");
+        propertyCaptions.put("state", "State");
+
+        propertyValues.put("max", "241 959,01 €");
+        propertyValues.put("date", "1.1.2010");
+        propertyValues.put("state", "State");
+    }
+
     @Override
     public void init() {
         setTheme("chameleon");
-        Presentation presentation = getPresentation();
-        UIElement content = getContent();
-
         Window mainWindow = new Window("Jefferson Demo");
-        try {
-            mainWindow.addComponent(presentation.render(content));
-        } catch (InstantiationException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
         setMainWindow(mainWindow);
-    }
 
-    private static Presentation getPresentation() {
-        Presentation presentation = new Presentation() {
-            {
-                define("tabs", TabSegment.class);
-            }
+        DemoContent content = new DemoContent();
+        DemoPresentation presentation = new DemoPresentation();
 
-            public Component create(SelectionControl content) {
-                return new Table();
-            }
-        };
-
-        return presentation;
-    }
-
-    private static UIElement getContent() {
-        LabelControl title = new LabelControl("title");
-        SelectionControl tabs = new SelectionControl("tabs");
-        ButtonControl newEstate = new ButtonControl("new-item");
-        ButtonControl user = new ButtonControl("user");
-        ButtonControl signOut = new ButtonControl("sign-out");
-
-        SelectionControl estates = new SelectionControl("estates");
-
-        LabelControl name = new LabelControl("name");
-        ButtonControl open = new ButtonControl("open");
-        SelectionControl expenses = new SelectionControl("expenses");
-        ButtonControl addExpense = new ButtonControl("add-expense");
-
-        UIElement max = new PropertyView("max");
-        UIElement date = new PropertyView("date");
-        UIElement state = new PropertyView("state");
-
-        View properties = new View("properties", max, date, state);
-        View details = new View("details", name, open, properties, expenses,
-                addExpense);
-        View nav = new View("nav", title, tabs, newEstate, user, signOut);
-        View main = new View("main", estates, details);
-        return new View("root", nav, main);
-    }
-
-    public static class PropertyView extends View {
-
-        public PropertyView(String name) {
-            super(name, new LabelControl("key"), new LabelControl("value"));
-        }
-    }
-
-    public static class TabSegment extends HorizontalLayout {
-
-        public TabSegment() {
-            addStyleName("segment");
-            addButton(new Button("Open"));
-            addButton(new Button("Ongoing"));
+        try {
+            mainWindow.setContent((ComponentContainer) presentation
+                    .render(content));
+        } catch (Exception e) {
+            throw new ExceptionInInitializerError(e);
         }
 
-        public TabSegment addButton(Button b) {
-            addComponent(b);
-            b.addListener(new Button.ClickListener() {
-                @Override
-                public void buttonClick(ClickEvent event) {
-                    if (event.getButton().getStyleName().indexOf("down") == -1) {
-                        event.getButton().addStyleName("down");
-                    } else {
-                        event.getButton().removeStyleName("down");
-                    }
-                }
-            });
-            updateButtonStyles();
-            return this;
-        }
-
-        private void updateButtonStyles() {
-            int i = 0;
-            Component c = null;
-            for (Iterator<Component> iterator = getComponentIterator(); iterator
-                    .hasNext();) {
-                c = iterator.next();
-                c.removeStyleName("first");
-                c.removeStyleName("last");
-                if (i == 0) {
-                    c.addStyleName("first");
-                }
-                i++;
-            }
-            if (c != null) {
-                c.addStyleName("last");
-            }
+        for (UIElement property : content.getPropertiesView().getChildren()) {
+            Component component = property.getComponent();
+            String name = property.getName();
+            component.setCaption(propertyCaptions.get(name));
+            ((Property) component).setValue(propertyValues.get(name));
         }
     }
 }
