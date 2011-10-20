@@ -39,7 +39,7 @@ public class Presentation {
         this(new Presenter() {
             @Override
             public void register(UIElement content, Component component) {
-                // does nothing
+                return;
             }
         });
     }
