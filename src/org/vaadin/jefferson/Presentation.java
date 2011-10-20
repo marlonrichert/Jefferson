@@ -87,6 +87,8 @@ public class Presentation {
         init(content, component, nameMethods.get(name));
 
         component.addStyleName(name);
+        component.setSizeUndefined();
+
         if (content instanceof View) {
             for (UIElement child : ((View) content).getChildren()) {
                 ((ComponentContainer) component).addComponent(render(child));
