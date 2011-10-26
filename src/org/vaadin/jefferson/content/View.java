@@ -19,29 +19,49 @@ import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.CssLayout;
 
 /**
- * A composite {@link UIElement}.
+ * A composite {@link UIElement}, typically rendered as a subclass of
+ * {@link ComponentContainer}.
  * 
- * @author marlon
+ * @author Marlon Richert
  */
 public class View extends UIElement {
 
     private UIElement[] children;
 
+    /**
+     * Creates a new view with the given name and children.
+     * 
+     * @param name
+     *            This view's name.
+     * @param children
+     *            This view's child content nodes.
+     */
     public View(String name, UIElement... children) {
         super(name);
         this.children = children;
     }
 
+    /**
+     * Gets this view's children.
+     * 
+     * @return This view's child content nodes.
+     */
     public UIElement[] getChildren() {
         return children;
     }
 
+    /**
+     * Sets this view's children.
+     * 
+     * @param children
+     *            This view's child content nodes.
+     */
     public void setChildren(UIElement... children) {
         this.children = children;
     }
 
     @Override
-    public Class<? extends ComponentContainer> getDefault() {
+    public Class<? extends ComponentContainer> getDefaultRenditionClass() {
         return CssLayout.class;
     }
 }

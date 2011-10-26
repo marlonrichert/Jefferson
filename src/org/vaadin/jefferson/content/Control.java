@@ -15,8 +15,19 @@
  */
 package org.vaadin.jefferson.content;
 
+/**
+ * A {@link UIElement} leaf node.
+ * 
+ * @author Marlon Richert
+ */
 public abstract class Control extends UIElement {
 
+    /**
+     * Creates a new control with the given name
+     * 
+     * @param name
+     *            This control's name.
+     */
     public Control(String name) {
         super(name);
     }

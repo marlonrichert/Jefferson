@@ -15,17 +15,30 @@
  */
 package org.vaadin.jefferson.content;
 
+import com.vaadin.ui.AbstractSelect;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.NativeSelect;
 
+/**
+ * A list of data items, typically rendered as a subclass of
+ * {@link AbstractSelect}.
+ * 
+ * @author marlon
+ */
 public class SelectionControl extends Control {
 
+    /**
+     * Creates a new selection with the given name.
+     * 
+     * @param name
+     *            This selection's name.
+     */
     public SelectionControl(String name) {
         super(name);
     }
 
     @Override
-    public Class<? extends Component> getDefault() {
+    public Class<? extends Component> getDefaultRenditionClass() {
         return NativeSelect.class;
     }
 }

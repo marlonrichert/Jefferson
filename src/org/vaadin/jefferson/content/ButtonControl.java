@@ -15,17 +15,31 @@
  */
 package org.vaadin.jefferson.content;
 
+import com.vaadin.ui.Button;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Link;
 import com.vaadin.ui.NativeButton;
 
+/**
+ * A button, typically rendered as a {@link Button}, {@link NativeButton} or
+ * {@link Link}.
+ * 
+ * @author Marlon Richert
+ */
 public class ButtonControl extends Control {
 
+    /**
+     * Creates a button with the given name.
+     * 
+     * @param name
+     *            This button's name.
+     */
     public ButtonControl(String name) {
         super(name);
     }
 
     @Override
-    public Class<? extends Component> getDefault() {
+    public Class<? extends Component> getDefaultRenditionClass() {
         return NativeButton.class;
     }
 }

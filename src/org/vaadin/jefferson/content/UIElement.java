@@ -15,32 +15,67 @@
  */
 package org.vaadin.jefferson.content;
 
+import org.vaadin.jefferson.Presentation;
+
 import com.vaadin.ui.Component;
 
 /**
- * A UI component.
+ * A content node.
  * 
- * @author marlon
+ * @author Marlon Richert
  */
 public abstract class UIElement {
     private final String name;
-    private Component component;
+    private Component rendition;
 
+    /**
+     * Creates a new content node with the given name. It is preferred to use
+     * only lower-case letters and hyphens (-), but this is not enforced.
+     * 
+     * @param name
+     *            A preferably (but not enforcedly) unique name.
+     */
     public UIElement(String name) {
         this.name = name;
     }
 
+    /**
+     * Gets this content node's name.
+     * 
+     * @return A name that unambiguously (but not necessarily uniquely)
+     *         identifies this content node.
+     */
     public String getName() {
         return name;
     }
 
-    public abstract Class<? extends Component> getDefault();
+    /**
+     * Gets the default class used for rendering this content node. Called by
+     * {@link Presentation#render(UIElement)} if it cannot find any rules to
+     * instantiate this content with.
+     * 
+     * @return A class that can be instantiated as a fall-back.
+     */
+    public abstract Class<? extends Component> getDefaultRenditionClass();
 
-    public void setComponent(Component component) {
-        this.component = component;
+    /**
+     * Sets the component that currently is used for rendering this content
+     * node. Called by {@link Presentation#render(UIElement)}
+     * 
+     * @param component
+     *            The component that currently renders this content.
+     */
+    public void setRendition(Component component) {
+        rendition = component;
     }
 
-    public Component getComponent() {
-        return this.component;
+    /**
+     * Gets the component that currently is used for rendering this content
+     * node.
+     * 
+     * @return The component that currently renders this content.
+     */
+    public Component getRendition() {
+        return rendition;
     }
 }

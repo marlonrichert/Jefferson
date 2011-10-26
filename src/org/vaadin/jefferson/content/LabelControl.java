@@ -18,14 +18,25 @@ package org.vaadin.jefferson.content;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Label;
 
+/**
+ * A static text label, typically rendered as a {@link Label}.
+ * 
+ * @author Marlon Richert
+ */
 public class LabelControl extends Control {
 
+    /**
+     * Creates a new text label with the given name.
+     * 
+     * @param name
+     *            This label's name.
+     */
     public LabelControl(String name) {
         super(name);
     }
 
     @Override
-    public Class<? extends Component> getDefault() {
+    public Class<? extends Component> getDefaultRenditionClass() {
         return Label.class;
     }
 }
