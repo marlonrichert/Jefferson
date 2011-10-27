@@ -53,7 +53,6 @@ public class Presentation {
      */
     public Presentation() {
         this(new Presenter() {
-            @Override
             public void register(UIElement content, Component component) {
                 return;
             }
