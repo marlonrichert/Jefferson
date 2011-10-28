@@ -26,7 +26,7 @@ public abstract class Control extends UIElement {
      * Creates a new control with the given name
      * 
      * @param name
-     *            This control's name.
+     *            A human-readable name.
      */
     public Control(String name) {
         super(name);

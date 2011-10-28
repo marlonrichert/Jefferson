@@ -15,6 +15,7 @@
  */
 package org.vaadin.jefferson.content;
 
+import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.CssLayout;
 
@@ -61,7 +62,7 @@ public class View extends UIElement {
     }
 
     @Override
-    public Class<? extends ComponentContainer> getDefaultRenditionClass() {
+    public Class<? extends Component> getDefaultRenditionClass() {
         return CssLayout.class;
     }
 }

@@ -85,8 +85,8 @@ public class Presentation {
     /**
      * Defines a rule that a {@link UIElement} with the given name should be
      * rendered as an instance of the given subclass of {@link Component}.
-     * Instantiation is done by calling the no-args constructor of the given
-     * class.
+     * Instantiation is done by calling the String-arg or (if that fails) the
+     * no-args constructor of the given class.
      * <p>
      * Rules defined with this method take precedence over those defined with
      * {@link #define(Class, Class)}.
@@ -104,8 +104,8 @@ public class Presentation {
     /**
      * Defines a rule that a {@link UIElement} of the given type should be
      * rendered as an instance of the given subclass of {@link Component}.
-     * Instantiation is done by calling the no-args constructor of the given
-     * class.
+     * Instantiation is done by calling the String-arg or (if that fails) the
+     * no-args constructor of the given class.
      * <p>
      * Rules defined with {@link #define(String, Class)} take precedence over
      * those defined with this method.
@@ -173,22 +173,26 @@ public class Presentation {
      *            The content hierarchy to render.
      * @return The top-level component of the hierarchy.
      * @throws InstantiationException
-     *             if any rule-defined class cannot be instantiated by this
+     *             if a rule-defined class cannot be instantiated by this
      *             presentation
      * @throws IllegalAccessException
-     *             if any rule-defined constructor or method cannot be called by
+     *             if a rule-defined constructor or method cannot be called by
      *             this presentation
      * @throws InvocationTargetException
      *             when a rule-defined method throws an exception
+     * @throws NoSuchMethodException
+     *             if a rule-defined class has neither a no-args nor a
+     *             String-arg constructor
      */
     public Component render(UIElement content) throws InstantiationException,
-            IllegalAccessException, InvocationTargetException {
+            IllegalAccessException, InvocationTargetException,
+            NoSuchMethodException {
         String name = content.getName();
         Class<? extends UIElement> type = content.getClass();
 
         Component component = create(content);
 
-        component.addStyleName(name);
+        component.addStyleName(name.toLowerCase().replace(' ', '-'));
         component.setSizeUndefined();
 
         init(content, component, typeMethods.get(type));
@@ -220,9 +224,15 @@ public class Presentation {
      * @throws IllegalAccessException
      *             if any rule-defined constructor cannot be accessed by this
      *             presentation
+     * @throws InvocationTargetException
+     *             if the constructor throws an exception
+     * @throws NoSuchMethodException
+     *             if the rule-defined class has neither a no-args nor a
+     *             String-arg constructor
      */
     protected Component create(UIElement content)
-            throws InstantiationException, IllegalAccessException {
+            throws InstantiationException, IllegalAccessException,
+            InvocationTargetException, NoSuchMethodException {
         Class<? extends Component> rendition = nameClasses.get(content
                 .getName());
         if (rendition == null) {
@@ -231,7 +241,12 @@ public class Presentation {
                 rendition = content.getDefaultRenditionClass();
             }
         }
-        return rendition.newInstance();
+        try {
+            return rendition.getConstructor(String.class).newInstance(
+                    content.getName());
+        } catch (NoSuchMethodException e) {
+            return rendition.getConstructor().newInstance();
+        }
     }
 
     /**

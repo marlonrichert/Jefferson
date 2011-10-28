@@ -17,12 +17,10 @@ package org.vaadin.jefferson.content;
 
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.Link;
 import com.vaadin.ui.NativeButton;
 
 /**
- * A button, typically rendered as a {@link Button}, {@link NativeButton} or
- * {@link Link}.
+ * A button, typically rendered as a {@link Button} or {@link NativeButton}.
  * 
  * @author Marlon Richert
  */
