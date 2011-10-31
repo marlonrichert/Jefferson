@@ -15,6 +15,9 @@
  */
 package org.vaadin.jefferson.content;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.CssLayout;
@@ -27,7 +30,20 @@ import com.vaadin.ui.CssLayout;
  */
 public class View extends UIElement {
 
+    private final Map<String, View> views = new HashMap<String, View>();
+
     private UIElement[] children;
+
+    /**
+     * Creates a new view with the given name. Children can be added through
+     * {@link #setChildren(UIElement...)}.
+     * 
+     * @param name
+     *            This view's name.
+     */
+    protected View(String name) {
+        this(name, new UIElement[] {});
+    }
 
     /**
      * Creates a new view with the given name and children.
@@ -37,9 +53,36 @@ public class View extends UIElement {
      * @param children
      *            This view's child content nodes.
      */
-    public View(String name, UIElement... children) {
+    private View(String name, UIElement... children) {
         super(name);
         this.children = children;
+    }
+
+    /**
+     * Creates a new View and adds it to this view's registry.
+     * 
+     * @param viewName
+     *            The name of the new View.
+     * @param children
+     *            The new view's children.
+     * @return The new View.
+     */
+    protected View view(String viewName, UIElement... viewChildren) {
+        View view = new View(viewName, viewChildren);
+        views.put(viewName, view);
+        return view;
+    }
+
+    /**
+     * Gets the View with the given name from this view's registry.
+     * 
+     * @param viewName
+     *            The name of the View to get.
+     * @return A View created with this view's
+     *         {@link #view(String, UIElement...)} method.
+     */
+    protected View getView(String viewName) {
+        return views.get(viewName);
     }
 
     /**
