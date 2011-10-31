@@ -15,12 +15,14 @@
  */
 package org.vaadin.jefferson.content;
 
+import com.vaadin.ui.Component;
+
 /**
  * A {@link UIElement} leaf node.
  * 
  * @author Marlon Richert
  */
-public abstract class Control extends UIElement {
+public abstract class Control<T extends Component> extends UIElement<T> {
 
     /**
      * Creates a new control with the given name

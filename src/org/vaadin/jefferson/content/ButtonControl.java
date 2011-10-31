@@ -16,7 +16,6 @@
 package org.vaadin.jefferson.content;
 
 import com.vaadin.ui.Button;
-import com.vaadin.ui.Component;
 import com.vaadin.ui.NativeButton;
 
 /**
@@ -24,7 +23,7 @@ import com.vaadin.ui.NativeButton;
  * 
  * @author Marlon Richert
  */
-public class ButtonControl extends Control {
+public class ButtonControl extends Control<Button> {
 
     /**
      * Creates a button with the given name.
@@ -37,7 +36,7 @@ public class ButtonControl extends Control {
     }
 
     @Override
-    public Class<? extends Component> getDefaultRenditionClass() {
+    public Class<? extends Button> getDefaultRenditionClass() {
         return NativeButton.class;
     }
 }

@@ -16,7 +16,6 @@
 package org.vaadin.jefferson.content;
 
 import com.vaadin.ui.AbstractSelect;
-import com.vaadin.ui.Component;
 import com.vaadin.ui.NativeSelect;
 
 /**
@@ -25,7 +24,7 @@ import com.vaadin.ui.NativeSelect;
  * 
  * @author marlon
  */
-public class SelectionControl extends Control {
+public class SelectionControl extends Control<AbstractSelect> {
 
     /**
      * Creates a new selection with the given name.
@@ -38,7 +37,7 @@ public class SelectionControl extends Control {
     }
 
     @Override
-    public Class<? extends Component> getDefaultRenditionClass() {
+    public Class<? extends AbstractSelect> getDefaultRenditionClass() {
         return NativeSelect.class;
     }
 }

@@ -15,7 +15,6 @@
  */
 package org.vaadin.jefferson.content;
 
-import com.vaadin.ui.Component;
 import com.vaadin.ui.Label;
 
 /**
@@ -23,7 +22,7 @@ import com.vaadin.ui.Label;
  * 
  * @author Marlon Richert
  */
-public class LabelControl extends Control {
+public class LabelControl extends Control<Label> {
 
     /**
      * Creates a new text label with the given name.
@@ -36,7 +35,7 @@ public class LabelControl extends Control {
     }
 
     @Override
-    public Class<? extends Component> getDefaultRenditionClass() {
+    public Class<? extends Label> getDefaultRenditionClass() {
         return Label.class;
     }
 }

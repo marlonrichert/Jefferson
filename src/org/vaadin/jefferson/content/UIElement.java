@@ -24,9 +24,9 @@ import com.vaadin.ui.Component;
  * 
  * @author Marlon Richert
  */
-public abstract class UIElement {
+public abstract class UIElement<T extends Component> {
     private final String name;
-    private Component rendition;
+    private T rendition;
 
     /**
      * Creates a new content node with the given name. It is preferred to use
@@ -56,7 +56,7 @@ public abstract class UIElement {
      * 
      * @return A class that can be instantiated as a fall-back.
      */
-    public abstract Class<? extends Component> getDefaultRenditionClass();
+    public abstract Class<? extends T> getDefaultRenditionClass();
 
     /**
      * Sets the component that currently is used for rendering this content
@@ -65,7 +65,7 @@ public abstract class UIElement {
      * @param component
      *            The component that currently renders this content.
      */
-    public void setRendition(Component component) {
+    public void setRendition(T component) {
         rendition = component;
     }
 
@@ -75,7 +75,7 @@ public abstract class UIElement {
      * 
      * @return The component that currently renders this content.
      */
-    public Component getRendition() {
+    public T getRendition() {
         return rendition;
     }
 }

@@ -18,7 +18,6 @@ package org.vaadin.jefferson.content;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.CssLayout;
 
@@ -28,11 +27,11 @@ import com.vaadin.ui.CssLayout;
  * 
  * @author Marlon Richert
  */
-public class View extends UIElement {
+public class View extends UIElement<ComponentContainer> {
 
     private final Map<String, View> views = new HashMap<String, View>();
 
-    private UIElement[] children;
+    private UIElement<?>[] children;
 
     /**
      * Creates a new view with the given name. Children can be added through
@@ -53,7 +52,7 @@ public class View extends UIElement {
      * @param children
      *            This view's child content nodes.
      */
-    private View(String name, UIElement... children) {
+    private View(String name, UIElement<?>... children) {
         super(name);
         this.children = children;
     }
@@ -67,7 +66,7 @@ public class View extends UIElement {
      *            The new view's children.
      * @return The new View.
      */
-    protected View view(String viewName, UIElement... viewChildren) {
+    protected View view(String viewName, UIElement<?>... viewChildren) {
         View view = new View(viewName, viewChildren);
         views.put(viewName, view);
         return view;
@@ -90,7 +89,7 @@ public class View extends UIElement {
      * 
      * @return This view's child content nodes.
      */
-    public UIElement[] getChildren() {
+    public UIElement<?>[] getChildren() {
         return children;
     }
 
@@ -100,12 +99,12 @@ public class View extends UIElement {
      * @param children
      *            This view's child content nodes.
      */
-    public void setChildren(UIElement... children) {
+    public void setChildren(UIElement<?>... children) {
         this.children = children;
     }
 
     @Override
-    public Class<? extends Component> getDefaultRenditionClass() {
+    public Class<? extends ComponentContainer> getDefaultRenditionClass() {
         return CssLayout.class;
     }
 }
