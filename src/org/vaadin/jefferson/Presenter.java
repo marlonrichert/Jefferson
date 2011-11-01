@@ -20,5 +20,5 @@ public interface Presenter {
      * @param component
      *            The component as which the given content was rendered.
      */
-    void register(UIElement content, Component component);
+    void register(UIElement<?> content, Component component);
 }

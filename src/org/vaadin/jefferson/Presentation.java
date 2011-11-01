@@ -42,8 +42,8 @@ import com.vaadin.ui.ComponentContainer;
 public class Presentation {
 
     private final Map<String, Class<? extends Component>> nameClasses = new HashMap<String, Class<? extends Component>>();
-    private final Map<Class<? extends UIElement>, Class<? extends Component>> typeClasses = new HashMap<Class<? extends UIElement>, Class<? extends Component>>();
-    private final Map<Class<? extends UIElement>, String> typeMethods = new HashMap<Class<? extends UIElement>, String>();
+    private final Map<Class<? extends UIElement<?>>, Class<? extends Component>> typeClasses = new HashMap<Class<? extends UIElement<?>>, Class<? extends Component>>();
+    private final Map<Class<? extends UIElement<?>>, String> typeMethods = new HashMap<Class<? extends UIElement<?>>, String>();
     private final Map<String, String> nameMethods = new HashMap<String, String>();
 
     private Presenter presenter;
@@ -53,7 +53,7 @@ public class Presentation {
      */
     public Presentation() {
         this(new Presenter() {
-            public void register(UIElement content, Component component) {
+            public void register(UIElement<?> content, Component component) {
                 return;
             }
         });
@@ -115,7 +115,7 @@ public class Presentation {
      * @param renditionClass
      *            The class to use for rendering.
      */
-    public void define(Class<? extends UIElement> contentClass,
+    public void define(Class<? extends UIElement<?>> contentClass,
             Class<? extends Component> renditionClass) {
         typeClasses.put(contentClass, renditionClass);
     }
@@ -160,7 +160,7 @@ public class Presentation {
      * @param methodName
      *            The name of a method in this presentation.
      */
-    public void define(Class<? extends UIElement> contentClass,
+    public void define(Class<? extends UIElement<?>> contentClass,
             String methodName) {
         typeMethods.put(contentClass, methodName);
     }
@@ -168,6 +168,8 @@ public class Presentation {
     /**
      * Renders the given {@link UIElement} according to the rules defined in
      * this presentation.
+     * 
+     * @param <T>
      * 
      * @param content
      *            The content hierarchy to render.
@@ -184,10 +186,13 @@ public class Presentation {
      *             if a rule-defined class has neither a no-args nor a
      *             String-arg constructor
      */
-    public Component render(UIElement content) throws InstantiationException,
-            IllegalAccessException, InvocationTargetException,
-            NoSuchMethodException {
+    @SuppressWarnings("unchecked")
+    public <T extends Component> Component render(UIElement<T> content)
+            throws InstantiationException, IllegalAccessException,
+            InvocationTargetException, NoSuchMethodException {
         String name = content.getName();
+
+        @SuppressWarnings("rawtypes")
         Class<? extends UIElement> type = content.getClass();
 
         Component component = create(content);
@@ -199,12 +204,12 @@ public class Presentation {
         init(content, component, nameMethods.get(name));
 
         if (content instanceof View) {
-            for (UIElement child : ((View) content).getChildren()) {
+            for (UIElement<?> child : ((View) content).getChildren()) {
                 ((ComponentContainer) component).addComponent(render(child));
             }
         }
 
-        content.setRendition(component);
+        content.setRendition((T) component);
         presenter.register(content, component);
 
         return component;
@@ -214,6 +219,8 @@ public class Presentation {
      * Instantiates a rendition for the given content. If any rules are defined
      * for the given content, it will use those rules to instantiate the
      * rendition. If not, it will return the content's default rendition.
+     * 
+     * @param <T>
      * 
      * @param content
      *            The content node to create a rendering for.
@@ -230,7 +237,7 @@ public class Presentation {
      *             if the rule-defined class has neither a no-args nor a
      *             String-arg constructor
      */
-    protected Component create(UIElement content)
+    protected <T extends Component> Component create(UIElement<T> content)
             throws InstantiationException, IllegalAccessException,
             InvocationTargetException, NoSuchMethodException {
         Class<? extends Component> rendition = nameClasses.get(content
@@ -268,7 +275,7 @@ public class Presentation {
      * @throws InvocationTargetException
      *             when the given method throws an exception
      */
-    protected void init(UIElement content, Component component,
+    protected void init(UIElement<?> content, Component component,
             String methodName) throws IllegalAccessException,
             InvocationTargetException {
         if (methodName != null) {
