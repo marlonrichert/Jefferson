@@ -39,4 +39,9 @@ public class ButtonControl extends Control<Button> {
     public Class<? extends Button> getDefaultRenditionClass() {
         return NativeButton.class;
     }
+
+    @Override
+    public Class<Button> getRenditionInterface() {
+        return Button.class;
+    }
 }

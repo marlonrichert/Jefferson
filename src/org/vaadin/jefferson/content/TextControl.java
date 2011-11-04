@@ -13,4 +13,9 @@ public class TextControl extends Control<AbstractTextField> {
     public Class<? extends AbstractTextField> getDefaultRenditionClass() {
         return TextField.class;
     }
+
+    @Override
+    public Class<AbstractTextField> getRenditionInterface() {
+        return AbstractTextField.class;
+    }
 }

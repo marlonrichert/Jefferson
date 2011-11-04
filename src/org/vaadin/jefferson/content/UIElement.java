@@ -50,6 +50,14 @@ public abstract class UIElement<T extends Component> {
     }
 
     /**
+     * Gets the class whose interface renditions of this content node should
+     * implement.
+     * 
+     * @return The return type of {@link #getRendition()}.
+     */
+    public abstract Class<T> getRenditionInterface();
+
+    /**
      * Gets the default class used for rendering this content node. Called by
      * {@link Presentation#render(UIElement)} if it cannot find any rules to
      * instantiate this content with.
@@ -66,6 +74,12 @@ public abstract class UIElement<T extends Component> {
      *            The component that currently renders this content.
      */
     public void setRendition(T component) {
+        Class<? extends Component> componentClass = component.getClass();
+        Class<T> renditionClass = getRenditionInterface();
+        if (!renditionClass.isAssignableFrom(componentClass)) {
+            throw new IllegalArgumentException(componentClass
+                    + " is not a sub-class of " + renditionClass);
+        }
         rendition = component;
     }
 

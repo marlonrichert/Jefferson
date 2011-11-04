@@ -107,4 +107,9 @@ public class View extends UIElement<ComponentContainer> {
     public Class<? extends ComponentContainer> getDefaultRenditionClass() {
         return CssLayout.class;
     }
+
+    @Override
+    public Class<ComponentContainer> getRenditionInterface() {
+        return ComponentContainer.class;
+    }
 }

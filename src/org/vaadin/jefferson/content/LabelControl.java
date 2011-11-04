@@ -38,4 +38,9 @@ public class LabelControl extends Control<Label> {
     public Class<? extends Label> getDefaultRenditionClass() {
         return Label.class;
     }
+
+    @Override
+    public Class<Label> getRenditionInterface() {
+        return Label.class;
+    }
 }

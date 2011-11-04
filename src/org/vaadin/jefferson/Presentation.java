@@ -46,8 +46,8 @@ public class Presentation {
 
     private final Map<String, Class<? extends Component>> nameClasses = new HashMap<String, Class<? extends Component>>();
     private final Map<Class<? extends UIElement<?>>, Class<? extends Component>> typeClasses = new HashMap<Class<? extends UIElement<?>>, Class<? extends Component>>();
-    private final Map<Class<? extends UIElement<?>>, Method> typeMethods = new HashMap<Class<? extends UIElement<?>>, Method>();
-    private final Map<String, Method> nameMethods = new HashMap<String, Method>();
+    private final Map<Class<? extends UIElement<?>>, Method[]> typeMethods = new HashMap<Class<? extends UIElement<?>>, Method[]>();
+    private final Map<String, Method[]> nameMethods = new HashMap<String, Method[]>();
 
     private Presenter presenter;
 
@@ -89,7 +89,8 @@ public class Presentation {
 
     /**
      * Defines a rule that a {@link UIElement} with the given name should be
-     * rendered as an instance of the given subclass of {@link Component}.
+     * rendered as an instance of the given subclass of {@link Component}. If
+     * this is not possible at run-time, the given rule will be ignored.
      * Instantiation is done by calling the String-arg or (if that fails)
      * no-args constructor of the given class.
      * <p>
@@ -108,12 +109,14 @@ public class Presentation {
 
     /**
      * Defines a rule that a {@link UIElement} of the given type should be
-     * rendered as an instance of the given subclass of {@link Component}.
+     * rendered as an instance of the given subclass of {@link Component}. If
+     * this is not possible at run-time, the given rule will be ignored.
      * Instantiation is done by calling the String-arg or (if that fails)
      * no-args constructor of the given class.
      * <p>
      * Rules defined with {@link #define(String, Class)} take precedence over
      * those defined with this method.
+     * <p>
      * 
      * @param contentClass
      *            The content's class.
@@ -151,12 +154,12 @@ public class Presentation {
      * 
      * @param contentName
      *            The content's name.
-     * @param method
-     *            A method in this presentation.
+     * @param methods
+     *            Methods in this presentation.
      * @see #method(String)
      */
-    public void define(String contentName, Method method) {
-        nameMethods.put(contentName, method);
+    public void define(String contentName, Method... methods) {
+        nameMethods.put(contentName, methods);
     }
 
     /**
@@ -170,12 +173,13 @@ public class Presentation {
      * 
      * @param contentClass
      *            The content's class.
-     * @param method
-     *            A method in this presentation.
+     * @param methods
+     *            Methods in this presentation.
      * @see #method(String)
      */
-    public void define(Class<? extends UIElement<?>> contentClass, Method method) {
-        typeMethods.put(contentClass, method);
+    public void define(Class<? extends UIElement<?>> contentClass,
+            Method... methods) {
+        typeMethods.put(contentClass, methods);
     }
 
     /**
@@ -230,7 +234,8 @@ public class Presentation {
     /**
      * Instantiates a rendition for the given content. If any rules are defined
      * for the given content, it will use those rules to instantiate the
-     * rendition. If not, it will return the content's default rendition.
+     * rendition (if possible). If not, it will return the content's default
+     * rendition.
      * 
      * @param <T>
      * 
@@ -255,9 +260,12 @@ public class Presentation {
             InvocationTargetException, NoSuchMethodException {
 
         Class<T> rendition = (Class<T>) nameClasses.get(content.getName());
-        if (rendition == null) {
+        Class<T> renditionInterface = content.getRenditionInterface();
+        if (rendition == null
+                || !renditionInterface.isAssignableFrom(rendition)) {
             rendition = (Class<T>) typeClasses.get(content.getClass());
-            if (rendition == null) {
+            if (rendition == null
+                    || !renditionInterface.isAssignableFrom(rendition)) {
                 rendition = (Class<T>) content.getDefaultRenditionClass();
             }
         }
@@ -289,10 +297,13 @@ public class Presentation {
      * @throws InvocationTargetException
      *             when the given method throws an exception
      */
-    protected void init(UIElement<?> content, Component component, Method method)
-            throws IllegalAccessException, InvocationTargetException {
-        if (method != null) {
-            method.invoke(Presentation.this, content, component);
+    protected void init(UIElement<?> content, Component component,
+            Method... methods) throws IllegalAccessException,
+            InvocationTargetException {
+        if (methods != null) {
+            for (Method method : methods) {
+                method.invoke(Presentation.this, content, component);
+            }
         }
     }
 
