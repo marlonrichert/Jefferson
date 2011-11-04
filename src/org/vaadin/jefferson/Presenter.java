@@ -2,7 +2,6 @@ package org.vaadin.jefferson;
 
 import org.vaadin.jefferson.content.UIElement;
 
-import com.vaadin.ui.Component;
 
 /**
  * Callback interface for receiving registrations of content rendered by a
@@ -17,8 +16,6 @@ public interface Presenter {
      * 
      * @param content
      *            The content that was rendered.
-     * @param component
-     *            The component as which the given content was rendered.
      */
-    void register(UIElement<?> content, Component component);
+    void register(UIElement<?> content);
 }
