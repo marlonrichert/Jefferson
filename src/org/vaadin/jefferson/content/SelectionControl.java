@@ -20,7 +20,7 @@ import com.vaadin.ui.NativeSelect;
 
 /**
  * A list of data items, typically rendered as a subclass of
- * {@link AbstractSelect}.
+ * {@link com.vaadin.ui.AbstractSelect}.
  * 
  * @author Marlon Richert @ Vaadin
  */
@@ -37,12 +37,12 @@ public class SelectionControl extends Control<AbstractSelect> {
     }
 
     @Override
-    public Class<? extends AbstractSelect> getDefaultRenditionClass() {
+    public Class<? extends AbstractSelect> getDefaultRenderingClass() {
         return NativeSelect.class;
     }
 
     @Override
-    public Class<AbstractSelect> getRenditionInterface() {
+    public Class<AbstractSelect> getRenderingInterface() {
         return AbstractSelect.class;
     }
 }

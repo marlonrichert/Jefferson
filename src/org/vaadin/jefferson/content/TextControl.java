@@ -10,12 +10,12 @@ public class TextControl extends Control<AbstractTextField> {
     }
 
     @Override
-    public Class<? extends AbstractTextField> getDefaultRenditionClass() {
+    public Class<? extends AbstractTextField> getDefaultRenderingClass() {
         return TextField.class;
     }
 
     @Override
-    public Class<AbstractTextField> getRenditionInterface() {
+    public Class<AbstractTextField> getRenderingInterface() {
         return AbstractTextField.class;
     }
 }

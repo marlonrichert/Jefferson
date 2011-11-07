@@ -19,7 +19,8 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.NativeButton;
 
 /**
- * A button, typically rendered as a {@link Button} or {@link NativeButton}.
+ * A button, typically rendered as a {@link com.vaadin.ui.Button} or
+ * {@link com.vaadin.ui.NativeButton}.
  * 
  * @author Marlon Richert
  */
@@ -36,12 +37,12 @@ public class ButtonControl extends Control<Button> {
     }
 
     @Override
-    public Class<? extends Button> getDefaultRenditionClass() {
+    public Class<? extends Button> getDefaultRenderingClass() {
         return NativeButton.class;
     }
 
     @Override
-    public Class<Button> getRenditionInterface() {
+    public Class<Button> getRenderingInterface() {
         return Button.class;
     }
 }

@@ -99,12 +99,12 @@ public class Presentation {
      * 
      * @param contentName
      *            The content's name.
-     * @param renditionClass
+     * @param renderingClass
      *            The class to use for rendering.
      */
     public void define(String contentName,
-            Class<? extends Component> renditionClass) {
-        nameClasses.put(contentName, renditionClass);
+            Class<? extends Component> renderingClass) {
+        nameClasses.put(contentName, renderingClass);
     }
 
     /**
@@ -120,12 +120,12 @@ public class Presentation {
      * 
      * @param contentClass
      *            The content's class.
-     * @param renditionClass
+     * @param renderingClass
      *            The class to use for rendering.
      */
     public void define(Class<? extends UIElement<?>> contentClass,
-            Class<? extends Component> renditionClass) {
-        typeClasses.put(contentClass, renditionClass);
+            Class<? extends Component> renderingClass) {
+        typeClasses.put(contentClass, renderingClass);
     }
 
     /**
@@ -183,11 +183,16 @@ public class Presentation {
     }
 
     /**
-     * Renders the given {@link UIElement} according to the rules defined in
-     * this presentation.
+     * Renders the given {@link UIElement content} according to the rules
+     * defined in this presentation. In addition, it sets the size of the
+     * content's rendition to {@link com.vaadin.ui.Component#setSizeUndefined()
+     * undefined} and adds a CSS-friendly
+     * {@link com.vaadin.ui.Component#addStyleName(String) style name} to it by
+     * converting the content's name to lower-case and replacing spaces with
+     * hyphens (-).
      * 
      * @param <T>
-     *            The type of the rendition component.
+     *            The type of the rendition.
      * @param content
      *            The content hierarchy to render.
      * @return The top-level component of the hierarchy.
@@ -234,25 +239,25 @@ public class Presentation {
     /**
      * Instantiates a rendition for the given content. If any rules are defined
      * for the given content, it will use those rules to instantiate the
-     * rendition (if possible). If not, it will return the content's default
-     * rendition.
+     * rendition (if possible). If not, it will instantiate the content's
+     * {@link UIElement#getDefaultRenderingClass() default rendering class}.
      * 
      * @param <T>
      * 
      * @param content
-     *            The content node to create a rendering for.
-     * @return A uninitialized rendering for the given content node.
+     *            The content node to render.
+     * @return An uninitialized rendition of the given content node.
      * @throws InstantiationException
      *             if any rule-defined class cannot be instantiated by this
-     *             presentation
+     *             presentation.
      * @throws IllegalAccessException
      *             if any rule-defined constructor cannot be accessed by this
-     *             presentation
+     *             presentation.
      * @throws InvocationTargetException
-     *             if the constructor throws an exception
+     *             if the constructor throws an exception.
      * @throws NoSuchMethodException
      *             if the rule-defined class has neither a no-args nor a
-     *             String-arg constructor
+     *             String-arg constructor.
      */
     @SuppressWarnings("unchecked")
     protected <T extends Component> T create(UIElement<T> content)
@@ -260,13 +265,13 @@ public class Presentation {
             InvocationTargetException, NoSuchMethodException {
 
         Class<T> rendition = (Class<T>) nameClasses.get(content.getName());
-        Class<T> renditionInterface = content.getRenditionInterface();
+        Class<T> renditionInterface = content.getRenderingInterface();
         if (rendition == null
                 || !renditionInterface.isAssignableFrom(rendition)) {
             rendition = (Class<T>) typeClasses.get(content.getClass());
             if (rendition == null
                     || !renditionInterface.isAssignableFrom(rendition)) {
-                rendition = (Class<T>) content.getDefaultRenditionClass();
+                rendition = (Class<T>) content.getDefaultRenderingClass();
             }
         }
 

@@ -23,7 +23,7 @@ import com.vaadin.ui.CssLayout;
 
 /**
  * A composite {@link UIElement}, typically rendered as a subclass of
- * {@link ComponentContainer}.
+ * {@link com.vaadin.ui.ComponentContainer}.
  * 
  * @author Marlon Richert
  */
@@ -104,12 +104,12 @@ public class View extends UIElement<ComponentContainer> {
     }
 
     @Override
-    public Class<? extends ComponentContainer> getDefaultRenditionClass() {
+    public Class<? extends ComponentContainer> getDefaultRenderingClass() {
         return CssLayout.class;
     }
 
     @Override
-    public Class<ComponentContainer> getRenditionInterface() {
+    public Class<ComponentContainer> getRenderingInterface() {
         return ComponentContainer.class;
     }
 }

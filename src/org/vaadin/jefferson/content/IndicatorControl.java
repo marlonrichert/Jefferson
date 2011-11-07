@@ -9,12 +9,12 @@ public class IndicatorControl extends Control<ProgressIndicator> {
     }
 
     @Override
-    public Class<? extends ProgressIndicator> getDefaultRenditionClass() {
+    public Class<? extends ProgressIndicator> getDefaultRenderingClass() {
         return ProgressIndicator.class;
     }
 
     @Override
-    public Class<ProgressIndicator> getRenditionInterface() {
+    public Class<ProgressIndicator> getRenderingInterface() {
         return ProgressIndicator.class;
     }
 }

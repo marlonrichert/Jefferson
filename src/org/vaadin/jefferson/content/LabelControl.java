@@ -18,7 +18,7 @@ package org.vaadin.jefferson.content;
 import com.vaadin.ui.Label;
 
 /**
- * A static text label, typically rendered as a {@link Label}.
+ * A static text label, typically rendered as a {@link com.vaadin.ui.Label}.
  * 
  * @author Marlon Richert
  */
@@ -35,12 +35,12 @@ public class LabelControl extends Control<Label> {
     }
 
     @Override
-    public Class<? extends Label> getDefaultRenditionClass() {
+    public Class<? extends Label> getDefaultRenderingClass() {
         return Label.class;
     }
 
     @Override
-    public Class<Label> getRenditionInterface() {
+    public Class<Label> getRenderingInterface() {
         return Label.class;
     }
 }
