@@ -15,6 +15,7 @@
  */
 package org.vaadin.jefferson.content;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,7 +41,7 @@ public class View extends UIElement<ComponentContainer> {
      * @param name
      *            This view's name.
      */
-    protected View(String name) {
+    public View(String name) {
         this(name, new UIElement[] {});
     }
 
@@ -52,7 +53,7 @@ public class View extends UIElement<ComponentContainer> {
      * @param children
      *            This view's child content nodes.
      */
-    private View(String name, UIElement<?>... children) {
+    public View(String name, UIElement<?>... children) {
         super(name);
         this.children = children;
     }
@@ -90,7 +91,7 @@ public class View extends UIElement<ComponentContainer> {
      * @return This view's child content nodes.
      */
     public UIElement<?>[] getChildren() {
-        return children;
+        return Arrays.copyOf(children, children.length);
     }
 
     /**
@@ -99,7 +100,7 @@ public class View extends UIElement<ComponentContainer> {
      * @param children
      *            This view's child content nodes.
      */
-    public void setChildren(UIElement<?>... children) {
+    protected void setChildren(UIElement<?>... children) {
         this.children = children;
     }
 
