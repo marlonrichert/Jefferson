@@ -52,40 +52,44 @@ public class Composite<T extends ComponentContainer> extends View<T> {
      * Creates a new view with the given name. Children can be added through
      * {@link #setChildren(View...)}.
      * 
+     * @param <B>
+     *            The view's base rendering class.
      * @param name
-     *            This view's name.
+     *            The view's name.
      * @param base
-     *            This view's base rendering class.
+     *            The view's base rendering class.
      * @param impl
-     *            This view's fall-back rendering class.
+     *            The view's fall-back rendering class.
      * @see #getName()
      * @see #getBase()
      * @see #getFallback()
      */
-    public static <S extends ComponentContainer> Composite<S> create(
-            String name, Class<S> base, Class<? extends S> impl) {
-        return new Composite<S>(name, base, impl);
+    public static <B extends ComponentContainer> Composite<B> create(
+            String name, Class<B> base, Class<? extends B> impl) {
+        return new Composite<B>(name, base, impl);
     }
 
     /**
      * Creates a new view with the given name and children.
      * 
+     * @param <B>
+     *            The view's base rendering class.
      * @param name
-     *            This view's name.
+     *            The view's name.
      * @param base
-     *            This view's base rendering class.
+     *            The view's base rendering class.
      * @param impl
-     *            This view's fall-back rendering class.
+     *            The view's fall-back rendering class.
      * @param children
-     *            This view's child content nodes.
+     *            The view's child content nodes.
      * @see #getName()
      * @see #getBase()
      * @see #getFallback()
      */
-    public static <S extends ComponentContainer> Composite<S> create(
-            String name, Class<S> base, Class<? extends S> impl,
+    public static <B extends ComponentContainer> Composite<B> create(
+            String name, Class<B> base, Class<? extends B> impl,
             View<?>... children) {
-        return new Composite<S>(name, base, impl, children);
+        return new Composite<B>(name, base, impl, children);
     }
 
     /**
