@@ -15,102 +15,98 @@
  */
 package org.vaadin.jefferson.content;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import org.vaadin.jefferson.Presentation;
 
-import com.vaadin.ui.ComponentContainer;
-import com.vaadin.ui.CssLayout;
+import com.vaadin.ui.Component;
 
 /**
- * A composite {@link UIElement}, typically rendered as a subclass of
- * {@link com.vaadin.ui.ComponentContainer}.
+ * A content node.
  * 
- * @author Marlon Richert
+ * @author Marlon Richert @ Vaadin
  */
-public class View extends UIElement<ComponentContainer> {
+public class View<T extends Component> {
+    private final String name;
+    private final Class<T> base;
+    private final Class<? extends T> fallback;
 
-    private final Map<String, View> views = new HashMap<String, View>();
-
-    private UIElement<?>[] children;
+    private T rendition;
 
     /**
-     * Creates a new view with the given name. Children can be added through
-     * {@link #setChildren(UIElement...)}.
+     * Creates a new content node with the given name. It is preferred to use
+     * only lower-case letters and hyphens (-), but this is not enforced.
      * 
      * @param name
-     *            This view's name.
+     *            A preferably (but not enforcedly) unique name.
      */
-    public View(String name) {
-        this(name, new UIElement[] {});
+    protected View(String name, Class<T> base, Class<? extends T> impl) {
+        this.name = name;
+        this.base = base;
+        this.fallback = impl;
+    }
+
+    public static <S extends Component> View<S> create(String name,
+            Class<S> base, Class<? extends S> impl) {
+        return new View<S>(name, base, impl);
+    }
+
+    public void accept(T component, Presentation presentation) {
+        setRendition(component);
     }
 
     /**
-     * Creates a new view with the given name and children.
+     * Gets the class whose interface renditions of this content node should
+     * implement.
      * 
-     * @param name
-     *            This view's name.
-     * @param children
-     *            This view's child content nodes.
+     * @return The return type of {@link #getRendition()}.
      */
-    public View(String name, UIElement<?>... children) {
-        super(name);
-        this.children = children;
+    public Class<T> getBase() {
+        return base;
     }
 
     /**
-     * Creates a new View and adds it to this view's registry.
+     * Gets the default class used for rendering this content node. Called by
+     * {@link Presentation#visit(View)} if it cannot find any rules to
+     * instantiate this content with.
      * 
-     * @param viewName
-     *            The name of the new View.
-     * @param children
-     *            The new view's children.
-     * @return The new View.
+     * @return A class that can be instantiated as a fall-back rendition.
      */
-    protected View view(String viewName, UIElement<?>... viewChildren) {
-        View view = new View(viewName, viewChildren);
-        views.put(viewName, view);
-        return view;
+    public Class<? extends T> getFallback() {
+        return fallback;
     }
 
     /**
-     * Gets the View with the given name from this view's registry.
+     * Gets this content node's name.
      * 
-     * @param viewName
-     *            The name of the View to get.
-     * @return A View created with this view's
-     *         {@link #view(String, UIElement...)} method.
+     * @return A name that unambiguously (but not necessarily uniquely)
+     *         identifies this content node.
      */
-    protected View getView(String viewName) {
-        return views.get(viewName);
+    public String getName() {
+        return name;
     }
 
     /**
-     * Gets this view's children.
+     * Sets the component that currently is used for rendering this content
+     * node. Called by {@link Presentation#visit(View)}
      * 
-     * @return This view's child content nodes.
+     * @param rendition
+     *            The component that currently renders this content.
      */
-    public UIElement<?>[] getChildren() {
-        return Arrays.copyOf(children, children.length);
+    protected void setRendition(T rendition) {
+        Class<? extends Component> renditionClass = rendition.getClass();
+        if (!base.isAssignableFrom(renditionClass)) {
+            throw new IllegalArgumentException(base
+                    + " is not a superclass of " + renditionClass);
+        }
+        this.rendition = rendition;
     }
 
     /**
-     * Sets this view's children.
+     * Gets the component that currently is used for rendering this content
+     * node.
      * 
-     * @param children
-     *            This view's child content nodes.
+     * @return The component that currently renders this content.
      */
-    protected void setChildren(UIElement<?>... children) {
-        this.children = children;
-    }
-
-    @Override
-    public Class<? extends ComponentContainer> getDefaultRenderingClass() {
-        return CssLayout.class;
-    }
-
-    @Override
-    public Class<ComponentContainer> getRenderingInterface() {
-        return ComponentContainer.class;
+    public T getRendition() {
+        return rendition;
     }
 }

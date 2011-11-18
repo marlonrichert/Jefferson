@@ -22,115 +22,77 @@ import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.vaadin.jefferson.content.UIElement;
 import org.vaadin.jefferson.content.View;
 
 import com.vaadin.tools.ReflectTools;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentContainer;
 
 /**
  * A presentation of some Vaadin content. The normal usage is to define some
  * rules using its various <code>define(…)</code> methods and then call
- * {@link #render(UIElement)}.
- * <p>
- * As a convenience, a centralized {@link Presenter} can be set to receive
- * callbacks for each successfully rendered content node. This is, however,
- * purely optional, as the presentation will already register renditions by
- * calling {@link UIElement#setRendition(Component)} on each rendered content
- * node.
+ * {@link #visit(View)}.
  * 
  * @author Marlon Richert @ Vaadin
  */
 public class Presentation {
 
     private final Map<String, Class<? extends Component>> nameClasses = new HashMap<String, Class<? extends Component>>();
-    private final Map<Class<? extends UIElement<?>>, Class<? extends Component>> typeClasses = new HashMap<Class<? extends UIElement<?>>, Class<? extends Component>>();
-    private final Map<Class<? extends UIElement<?>>, Method[]> typeMethods = new HashMap<Class<? extends UIElement<?>>, Method[]>();
+    private final Map<Class<? extends Component>, Class<? extends Component>> typeClasses = new HashMap<Class<? extends Component>, Class<? extends Component>>();
+    private final Map<Class<? extends Component>, Method[]> typeMethods = new HashMap<Class<? extends Component>, Method[]>();
     private final Map<String, Method[]> nameMethods = new HashMap<String, Method[]>();
 
-    private Presenter presenter;
-
     /**
-     * Creates a new presentation without a presenter.
+     * Creates a new presentation.
      */
     public Presentation() {
-        this(new Presenter() {
-            public void register(UIElement<?> content) {
-                return;
-            }
-        });
     }
 
     /**
-     * Creates a new presentation that registers rendered content nodes with the
-     * given presenter.
-     * 
-     * @param presenter
-     *            The presenter to register rendered content with.
-     * @see #setPresenter(Presenter)
-     */
-    public Presentation(Presenter presenter) {
-        this.presenter = presenter;
-    }
-
-    /**
-     * Sets this presentation's presenter. Each time a {@link UIElement} has
-     * been rendered, this presentation will call
-     * {@link Presenter#register(UIElement)} (<i>after</i> calling
-     * {@link UIElement#setRendition(Component)}).
-     * 
-     * @param presenter
-     *            The presenter to register rendered content with.
-     */
-    public void setPresenter(Presenter presenter) {
-        this.presenter = presenter;
-    }
-
-    /**
-     * Defines a rule that a {@link UIElement} with the given name should be
-     * rendered as an instance of the given subclass of {@link Component}. If
-     * this is not possible at run-time, the given rule will be ignored.
-     * Instantiation is done by calling the String-arg or (if that fails)
-     * no-args constructor of the given class.
+     * Defines a rule that a {@link View} with the given name should be rendered
+     * as an instance of the given subclass of {@link Component}. If this is not
+     * possible at run-time, the given rule will be ignored. Instantiation is
+     * done by calling the String-arg or (if that fails) no-args constructor of
+     * the given class.
      * <p>
      * Rules defined with this method take precedence over those defined with
      * {@link #define(Class, Class)}.
      * 
-     * @param contentName
+     * @param name
      *            The content's name.
-     * @param renderingClass
+     * @param impl
      *            The class to use for rendering.
      */
-    public void define(String contentName,
-            Class<? extends Component> renderingClass) {
-        nameClasses.put(contentName, renderingClass);
+    public void define(String name, Class<? extends Component> impl) {
+        nameClasses.put(name, impl);
     }
 
     /**
-     * Defines a rule that a {@link UIElement} of the given type should be
-     * rendered as an instance of the given subclass of {@link Component}. If
-     * this is not possible at run-time, the given rule will be ignored.
-     * Instantiation is done by calling the String-arg or (if that fails)
-     * no-args constructor of the given class.
+     * Defines a rule that a {@link View} of the given type should be rendered
+     * as an instance of the given subclass of {@link Component}. If this is not
+     * possible at run-time, the given rule will be ignored. Instantiation is
+     * done by calling the String-arg or (if that fails) no-args constructor of
+     * the given class.
      * <p>
      * Rules defined with {@link #define(String, Class)} take precedence over
      * those defined with this method.
      * <p>
      * 
-     * @param contentClass
-     *            The content's class.
-     * @param renderingClass
+     * @param interface The content's class.
+     * @param impl
      *            The class to use for rendering.
      */
-    public void define(Class<? extends UIElement<?>> contentClass,
-            Class<? extends Component> renderingClass) {
-        typeClasses.put(contentClass, renderingClass);
+    public void define(Class<? extends Component> type,
+            Class<? extends Component> impl) {
+        if (!type.isAssignableFrom(impl)) {
+            throw new IllegalArgumentException(type
+                    + " is not a superclass of " + impl);
+        }
+        typeClasses.put(type, impl);
     }
 
     /**
      * Returns the method in this presentation that has the signature
-     * <code>name(UIElement, Component)</code>. Convenience method for use with
+     * <code>name(View, Component)</code>. Convenience method for use with
      * {@link #define(Class, Method)} and {@link #define(String, Method)}.
      * 
      * @param name
@@ -138,55 +100,54 @@ public class Presentation {
      * @return A method in this presentation.
      */
     protected Method method(String name) {
-        Method method = ReflectTools.findMethod(getClass(), name,
-                UIElement.class, Component.class);
+        Method method = ReflectTools.findMethod(getClass(), name, View.class,
+                Component.class);
         return AccessController.doPrivileged(new AccessibleMethod(method));
     }
 
     /**
-     * Defines a rule that a {@link UIElement} with the given name should be
+     * Defines a rule that a {@link View} with the given name should be
      * initialized by a method with the given name in this presentation. The
      * actual method should be defined in this presentation by sub-classing and
-     * should have the signature <code>methodName(UIElement, Component)</code>.
+     * should have the signature <code>methodName(View, Component)</code>.
      * <p>
      * Rules defined by this method are applied <i>after</i> those defined by
      * {@link #define(Class, String)}.
      * 
-     * @param contentName
+     * @param name
      *            The content's name.
      * @param methods
      *            Methods in this presentation.
      * @see #method(String)
      */
-    public void define(String contentName, Method... methods) {
-        nameMethods.put(contentName, methods);
+    public void define(String name, Method... methods) {
+        nameMethods.put(name, methods);
     }
 
     /**
-     * Defines a rule that a {@link UIElement} of the given type should be
+     * Defines a rule that a {@link View} of the given type should be
      * initialized by a method with the given name in this presentation. The
      * actual method should be defined in this presentation by sub-classing and
-     * should have the signature <code>methodName(UIElement, Component)</code>.
+     * should have the signature <code>methodName(View, Component)</code>.
      * <p>
      * Rules defined by this method are applied <i>before</i> those defined by
      * {@link #define(Class, String)}.
      * 
-     * @param contentClass
+     * @param type
      *            The content's class.
      * @param methods
      *            Methods in this presentation.
      * @see #method(String)
      */
-    public void define(Class<? extends UIElement<?>> contentClass,
-            Method... methods) {
-        typeMethods.put(contentClass, methods);
+    public void define(Class<? extends Component> type, Method... methods) {
+        typeMethods.put(type, methods);
     }
 
     /**
-     * Renders the given {@link UIElement content} according to the rules
-     * defined in this presentation. In addition, it sets the size of the
-     * content's rendition to {@link com.vaadin.ui.Component#setSizeUndefined()
-     * undefined} and adds a CSS-friendly
+     * Renders the given {@link View content} according to the rules defined in
+     * this presentation. In addition, it sets the size of the content's
+     * rendition to {@link com.vaadin.ui.Component#setSizeUndefined() undefined}
+     * and adds a CSS-friendly
      * {@link com.vaadin.ui.Component#addStyleName(String) style name} to it by
      * converting the content's name to lower-case and replacing spaces with
      * hyphens (-).
@@ -204,82 +165,56 @@ public class Presentation {
      *             this presentation
      * @throws InvocationTargetException
      *             when a rule-defined method throws an exception
-     * @throws NoSuchMethodException
-     *             if a rule-defined class has neither a no-args nor a
-     *             String-arg constructor
      */
-    public <T extends Component> T render(UIElement<T> content)
-            throws InstantiationException, IllegalAccessException,
-            InvocationTargetException, NoSuchMethodException {
+    public <T extends Component> T visit(View<T> content) {
         String name = content.getName();
 
         @SuppressWarnings("rawtypes")
-        Class<? extends UIElement> type = content.getClass();
+        Class<? extends View> type = content.getClass();
 
-        T component = create(content);
+        T rendition = create(content);
 
-        component.addStyleName(name.toLowerCase().replace(' ', '-'));
-        component.setSizeUndefined();
+        rendition.addStyleName(name.toLowerCase().replace(' ', '-'));
+        rendition.setSizeUndefined();
 
-        init(content, component, typeMethods.get(type));
-        init(content, component, nameMethods.get(name));
+        init(content, rendition, typeMethods.get(type));
+        init(content, rendition, nameMethods.get(name));
 
-        if (content instanceof View) {
-            for (UIElement<?> child : ((View) content).getChildren()) {
-                ((ComponentContainer) component).addComponent(render(child));
-            }
-        }
+        content.accept(rendition, this);
 
-        content.setRendition(component);
-        presenter.register(content);
-
-        return component;
+        return rendition;
     }
 
     /**
      * Instantiates a rendition for the given content. If any rules are defined
      * for the given content, it will use those rules to instantiate the
      * rendition (if possible). If not, it will instantiate the content's
-     * {@link UIElement#getDefaultRenderingClass() default rendering class}.
-     * 
-     * @param <T>
+     * {@link View#getDefault() default rendering class}.
      * 
      * @param content
      *            The content node to render.
      * @return An uninitialized rendition of the given content node.
-     * @throws InstantiationException
-     *             if any rule-defined class cannot be instantiated by this
-     *             presentation.
-     * @throws IllegalAccessException
-     *             if any rule-defined constructor cannot be accessed by this
-     *             presentation.
-     * @throws InvocationTargetException
-     *             if the constructor throws an exception.
-     * @throws NoSuchMethodException
-     *             if the rule-defined class has neither a no-args nor a
-     *             String-arg constructor.
      */
     @SuppressWarnings("unchecked")
-    protected <T extends Component> T create(UIElement<T> content)
-            throws InstantiationException, IllegalAccessException,
-            InvocationTargetException, NoSuchMethodException {
-
+    protected <T extends Component> T create(View<T> content) {
         Class<T> rendition = (Class<T>) nameClasses.get(content.getName());
-        Class<T> renditionInterface = content.getRenderingInterface();
-        if (rendition == null
-                || !renditionInterface.isAssignableFrom(rendition)) {
+        Class<T> base = content.getBase();
+        if (rendition == null || !base.isAssignableFrom(rendition)) {
             rendition = (Class<T>) typeClasses.get(content.getClass());
-            if (rendition == null
-                    || !renditionInterface.isAssignableFrom(rendition)) {
-                rendition = (Class<T>) content.getDefaultRenderingClass();
+            if (rendition == null || !base.isAssignableFrom(rendition)) {
+                rendition = (Class<T>) content.getFallback();
             }
         }
 
         try {
-            return rendition.getConstructor(String.class).newInstance(
-                    content.getName());
-        } catch (NoSuchMethodException e) {
-            return rendition.getConstructor().newInstance();
+            try {
+                return rendition.getConstructor(String.class).newInstance(
+                        content.getName());
+            } catch (NoSuchMethodException e) {
+                return rendition.getConstructor().newInstance();
+            }
+        } catch (Exception e) {
+            throw new ExceptionInInitializerError(e);
         }
     }
 
@@ -297,17 +232,15 @@ public class Presentation {
      * @param methodName
      *            The name of the method with which to initialize the given
      *            component.
-     * @throws IllegalAccessException
-     *             if the given method is inaccessible from this presentation
-     * @throws InvocationTargetException
-     *             when the given method throws an exception
      */
-    protected void init(UIElement<?> content, Component component,
-            Method... methods) throws IllegalAccessException,
-            InvocationTargetException {
+    protected void init(View<?> content, Component component, Method... methods) {
         if (methods != null) {
             for (Method method : methods) {
-                method.invoke(Presentation.this, content, component);
+                try {
+                    method.invoke(Presentation.this, content, component);
+                } catch (Exception e) {
+                    throw new ExceptionInInitializerError(e);
+                }
             }
         }
     }
