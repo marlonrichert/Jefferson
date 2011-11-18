@@ -22,33 +22,25 @@ import org.vaadin.jefferson.Presentation;
 import com.vaadin.ui.ComponentContainer;
 
 /**
- * A composite {@link View}, typically rendered as a subclass of
+ * A {@link View} with child views, rendered as a subclass of
  * {@link com.vaadin.ui.ComponentContainer}.
  * 
+ * @param <T>
+ *            This view's base rendering class.
  * @author Marlon Richert @ Vaadin
  */
 public class Composite<T extends ComponentContainer> extends View<T> {
-
     private View<?>[] children;
 
     /**
-     * Creates a new view with the given name. Children can be added through
-     * {@link #setChildren(View...)}.
-     * 
-     * @param name
-     *            This view's name.
+     * @see #create(String, Class, Class)
      */
     protected Composite(String name, Class<T> base, Class<? extends T> impl) {
         this(name, base, impl, new View[] {});
     }
 
     /**
-     * Creates a new view with the given name and children.
-     * 
-     * @param name
-     *            This view's name.
-     * @param children
-     *            This view's child content nodes.
+     * @see #create(String, Class, Class, View...)
      */
     protected Composite(String name, Class<T> base, Class<? extends T> impl,
             View<?>... children) {
@@ -56,17 +48,50 @@ public class Composite<T extends ComponentContainer> extends View<T> {
         this.children = children;
     }
 
+    /**
+     * Creates a new view with the given name. Children can be added through
+     * {@link #setChildren(View...)}.
+     * 
+     * @param name
+     *            This view's name.
+     * @param base
+     *            This view's base rendering class.
+     * @param impl
+     *            This view's fall-back rendering class.
+     * @see #getName()
+     * @see #getBase()
+     * @see #getFallback()
+     */
     public static <S extends ComponentContainer> Composite<S> create(
             String name, Class<S> base, Class<? extends S> impl) {
         return new Composite<S>(name, base, impl);
     }
 
+    /**
+     * Creates a new view with the given name and children.
+     * 
+     * @param name
+     *            This view's name.
+     * @param base
+     *            This view's base rendering class.
+     * @param impl
+     *            This view's fall-back rendering class.
+     * @param children
+     *            This view's child content nodes.
+     * @see #getName()
+     * @see #getBase()
+     * @see #getFallback()
+     */
     public static <S extends ComponentContainer> Composite<S> create(
             String name, Class<S> base, Class<? extends S> impl,
             View<?>... children) {
         return new Composite<S>(name, base, impl, children);
     }
 
+    /**
+     * Sets this view's rendering component and calls
+     * {@link Presentation#visit(View)} for each of its children.
+     */
     @Override
     public void accept(T rendition, Presentation presentation) {
         super.accept(rendition, presentation);

@@ -15,7 +15,6 @@
  */
 package org.vaadin.jefferson;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -35,17 +34,10 @@ import com.vaadin.ui.Component;
  * @author Marlon Richert @ Vaadin
  */
 public class Presentation {
-
     private final Map<String, Class<? extends Component>> nameClasses = new HashMap<String, Class<? extends Component>>();
     private final Map<Class<? extends Component>, Class<? extends Component>> typeClasses = new HashMap<Class<? extends Component>, Class<? extends Component>>();
     private final Map<Class<? extends Component>, Method[]> typeMethods = new HashMap<Class<? extends Component>, Method[]>();
     private final Map<String, Method[]> nameMethods = new HashMap<String, Method[]>();
-
-    /**
-     * Creates a new presentation.
-     */
-    public Presentation() {
-    }
 
     /**
      * Defines a rule that a {@link View} with the given name should be rendered
@@ -67,27 +59,28 @@ public class Presentation {
     }
 
     /**
-     * Defines a rule that a {@link View} of the given type should be rendered
-     * as an instance of the given subclass of {@link Component}. If this is not
-     * possible at run-time, the given rule will be ignored. Instantiation is
-     * done by calling the String-arg or (if that fails) no-args constructor of
-     * the given class.
+     * Defines a rule that a {@link View} with the given base rendition type
+     * should be rendered as an instance of the given subclass of
+     * {@link Component}. If this is not possible at run-time, the given rule
+     * will be ignored. Instantiation is done by calling the String-arg or (if
+     * that fails) no-args constructor of the given class.
      * <p>
      * Rules defined with {@link #define(String, Class)} take precedence over
      * those defined with this method.
      * <p>
      * 
-     * @param interface The content's class.
+     * @param base
+     *            The content's base rendition class.
      * @param impl
-     *            The class to use for rendering.
+     *            The class to actually use for rendering.
      */
-    public void define(Class<? extends Component> type,
+    public void define(Class<? extends Component> base,
             Class<? extends Component> impl) {
-        if (!type.isAssignableFrom(impl)) {
-            throw new IllegalArgumentException(type
+        if (!base.isAssignableFrom(impl)) {
+            throw new IllegalArgumentException(base
                     + " is not a superclass of " + impl);
         }
-        typeClasses.put(type, impl);
+        typeClasses.put(base, impl);
     }
 
     /**
@@ -125,46 +118,44 @@ public class Presentation {
     }
 
     /**
-     * Defines a rule that a {@link View} of the given type should be
-     * initialized by a method with the given name in this presentation. The
-     * actual method should be defined in this presentation by sub-classing and
-     * should have the signature <code>methodName(View, Component)</code>.
+     * Defines a rule that a {@link View} with the given base rendition type
+     * should be initialized by a method with the given name in this
+     * presentation. The actual method should be defined in this presentation by
+     * sub-classing and should have the signature
+     * <code>methodName(View, Component)</code>.
      * <p>
      * Rules defined by this method are applied <i>before</i> those defined by
      * {@link #define(Class, String)}.
      * 
-     * @param type
-     *            The content's class.
+     * @param base
+     *            The content's base rendition class.
      * @param methods
      *            Methods in this presentation.
      * @see #method(String)
      */
-    public void define(Class<? extends Component> type, Method... methods) {
-        typeMethods.put(type, methods);
+    public void define(Class<? extends Component> base, Method... methods) {
+        typeMethods.put(base, methods);
     }
 
     /**
      * Renders the given {@link View content} according to the rules defined in
-     * this presentation. In addition, it sets the size of the content's
-     * rendition to {@link com.vaadin.ui.Component#setSizeUndefined() undefined}
-     * and adds a CSS-friendly
-     * {@link com.vaadin.ui.Component#addStyleName(String) style name} to it by
-     * converting the content's name to lower-case and replacing spaces with
-     * hyphens (-).
+     * this presentation.
+     * <p>
+     * After instantiating the rendition, it passes it to
+     * {@link View#accept(Component, Presentation)}. It then sets the size of
+     * the content's rendition to
+     * {@link com.vaadin.ui.Component#setSizeUndefined() undefined} and adds a
+     * CSS-friendly {@link com.vaadin.ui.Component#addStyleName(String) style
+     * name} to it by converting the content's name to lower-case and replacing
+     * spaces with hyphens (-). Finally, it passes the rendition any
+     * rule-defined methods.
+     * <p>
      * 
      * @param <T>
-     *            The type of the rendition.
+     *            The base type of the rendition.
      * @param content
      *            The content hierarchy to render.
-     * @return The top-level component of the hierarchy.
-     * @throws InstantiationException
-     *             if a rule-defined class cannot be instantiated by this
-     *             presentation
-     * @throws IllegalAccessException
-     *             if a rule-defined constructor or method cannot be called by
-     *             this presentation
-     * @throws InvocationTargetException
-     *             when a rule-defined method throws an exception
+     * @return The top-level rendition component of the hierarchy.
      */
     public <T extends Component> T visit(View<T> content) {
         String name = content.getName();
@@ -189,29 +180,21 @@ public class Presentation {
      * Instantiates a rendition for the given content. If any rules are defined
      * for the given content, it will use those rules to instantiate the
      * rendition (if possible). If not, it will instantiate the content's
-     * {@link View#getDefault() default rendering class}.
+     * {@link View#getFallback() fall-back rendering class}.
      * 
      * @param content
      *            The content node to render.
      * @return An uninitialized rendition of the given content node.
      */
-    @SuppressWarnings("unchecked")
     protected <T extends Component> T create(View<T> content) {
-        Class<T> rendition = (Class<T>) nameClasses.get(content.getName());
-        Class<T> base = content.getBase();
-        if (rendition == null || !base.isAssignableFrom(rendition)) {
-            rendition = (Class<T>) typeClasses.get(content.getClass());
-            if (rendition == null || !base.isAssignableFrom(rendition)) {
-                rendition = (Class<T>) content.getFallback();
-            }
-        }
+        Class<T> impl = getRenderingClass(content);
 
         try {
             try {
-                return rendition.getConstructor(String.class).newInstance(
+                return impl.getConstructor(String.class).newInstance(
                         content.getName());
             } catch (NoSuchMethodException e) {
-                return rendition.getConstructor().newInstance();
+                return impl.getConstructor().newInstance();
             }
         } catch (Exception e) {
             throw new ExceptionInInitializerError(e);
@@ -219,11 +202,31 @@ public class Presentation {
     }
 
     /**
-     * Initializes the given component by calling
+     * Gets the given content's rendering class. If there is a class defined for
+     * the content's name, it will return that. If not, it will the class
+     * defined for implementing the content's base rendering class. If that
+     * fails, too, it simply return the content's fallback.
      * 
-     * <pre>
-     * Presentation.this.methodName(content, component)
-     * </pre>
+     * @param content
+     *            The view to render.
+     * @return A subclass of the view's base rendering class.
+     */
+    @SuppressWarnings("unchecked")
+    protected <T extends Component> Class<T> getRenderingClass(View<T> content) {
+        Class<T> base = content.getBase();
+        Class<T> impl = (Class<T>) nameClasses.get(content.getName());
+        if (impl == null || !base.isAssignableFrom(impl)) {
+            impl = (Class<T>) typeClasses.get(content.getClass());
+            if (impl == null || !base.isAssignableFrom(impl)) {
+                impl = (Class<T>) content.getFallback();
+            }
+        }
+        return impl;
+    }
+
+    /**
+     * Initializes the given component by calling
+     * <code>Presentation.this.methodName(content, component)</code>.
      * 
      * @param content
      *            The content for which the given component was rendered.

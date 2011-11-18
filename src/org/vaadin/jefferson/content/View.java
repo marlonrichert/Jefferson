@@ -22,6 +22,8 @@ import com.vaadin.ui.Component;
 /**
  * A content node.
  * 
+ * @param <T>
+ *            This view's base rendering class.
  * @author Marlon Richert @ Vaadin
  */
 public class View<T extends Component> {
@@ -32,30 +34,45 @@ public class View<T extends Component> {
     private T rendition;
 
     /**
-     * Creates a new content node with the given name. It is preferred to use
-     * only lower-case letters and hyphens (-), but this is not enforced.
-     * 
-     * @param name
-     *            A preferably (but not enforcedly) unique name.
+     * @see #create(String, Class, Class)
      */
-    protected View(String name, Class<T> base, Class<? extends T> impl) {
+    protected View(String name, Class<T> base, Class<? extends T> fallback) {
         this.name = name;
         this.base = base;
-        this.fallback = impl;
-    }
-
-    public static <S extends Component> View<S> create(String name,
-            Class<S> base, Class<? extends S> impl) {
-        return new View<S>(name, base, impl);
-    }
-
-    public void accept(T component, Presentation presentation) {
-        setRendition(component);
+        this.fallback = fallback;
     }
 
     /**
-     * Gets the class whose interface renditions of this content node should
-     * implement.
+     * Creates a new view.
+     * 
+     * @param <B>
+     *            The view's base rendering class.
+     * @param name
+     *            The view's name.
+     * @param base
+     *            The view's base rendering class.
+     * @param fallback
+     *            The view's fallback rendering class.
+     * @see #getName()
+     * @see #getBase()
+     * @see #getFallback()
+     */
+    public static <B extends Component> View<B> create(String name,
+            Class<B> base, Class<? extends B> impl) {
+        return new View<B>(name, base, impl);
+    }
+
+    /**
+     * Gets this view's name.
+     * 
+     * @return A human-readable name that identifies this view.
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Gets the class whose interface renditions of this view should implement.
      * 
      * @return The return type of {@link #getRendition()}.
      */
@@ -64,7 +81,7 @@ public class View<T extends Component> {
     }
 
     /**
-     * Gets the default class used for rendering this content node. Called by
+     * Gets the default class used for rendering this view. Called by
      * {@link Presentation#visit(View)} if it cannot find any rules to
      * instantiate this content with.
      * 
@@ -75,21 +92,26 @@ public class View<T extends Component> {
     }
 
     /**
-     * Gets this content node's name.
+     * Sets this view's rendering component.
+     * <p>
+     * Called by {@link Presentation#visit(View)}.
      * 
-     * @return A name that unambiguously (but not necessarily uniquely)
-     *         identifies this content node.
+     * @param component
+     *            This view's new rendering component.
+     * @param presentation
+     *            The presentation that called this method.
+     * @see #setRendition(Component)
      */
-    public String getName() {
-        return name;
+    public void accept(T component, Presentation presentation) {
+        setRendition(component);
     }
 
     /**
-     * Sets the component that currently is used for rendering this content
-     * node. Called by {@link Presentation#visit(View)}
+     * Sets the component that is used for rendering this view. Called by
+     * {@link #accept(Component, Presentation)}
      * 
      * @param rendition
-     *            The component that currently renders this content.
+     *            The component that renders this content.
      */
     protected void setRendition(T rendition) {
         Class<? extends Component> renditionClass = rendition.getClass();
@@ -101,10 +123,9 @@ public class View<T extends Component> {
     }
 
     /**
-     * Gets the component that currently is used for rendering this content
-     * node.
+     * Gets the component that is used for rendering this view.
      * 
-     * @return The component that currently renders this content.
+     * @return The component that renders this content.
      */
     public T getRendition() {
         return rendition;
