@@ -174,13 +174,13 @@ public class Presentation {
 
         T rendition = create(content);
 
+        content.accept(rendition, this);
+
         rendition.addStyleName(name.toLowerCase().replace(' ', '-'));
         rendition.setSizeUndefined();
 
         init(content, rendition, typeMethods.get(type));
         init(content, rendition, nameMethods.get(name));
-
-        content.accept(rendition, this);
 
         return rendition;
     }
