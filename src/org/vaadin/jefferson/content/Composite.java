@@ -20,6 +20,7 @@ import java.util.Arrays;
 import org.vaadin.jefferson.Presentation;
 
 import com.vaadin.ui.ComponentContainer;
+import com.vaadin.ui.CssLayout;
 
 /**
  * A {@link View} with child views, rendered as a subclass of
@@ -46,6 +47,11 @@ public class Composite<T extends ComponentContainer> extends View<T> {
             View<?>... children) {
         super(name, base, impl);
         this.children = children;
+    }
+
+    public static Composite<ComponentContainer> create(String name) {
+        return new Composite<ComponentContainer>(name,
+                ComponentContainer.class, CssLayout.class);
     }
 
     /**

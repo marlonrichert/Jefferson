@@ -42,6 +42,11 @@ public class View<T extends Component> {
         this.fallback = fallback;
     }
 
+    public static <B extends Component> View<B> create(String name,
+            Class<B> base) {
+        return new View<B>(name, base, base);
+    }
+
     /**
      * Creates a new view.
      * 

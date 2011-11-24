@@ -34,6 +34,8 @@ import com.vaadin.ui.Component;
  * @author Marlon Richert @ Vaadin
  */
 public class Presentation {
+    private static final String INVALID_CSS = "[^-_a-zA-Z]";
+    private static final String WHITESPACE = "\\s+";
     private final Map<String, Class<? extends Component>> nameClasses = new HashMap<String, Class<? extends Component>>();
     private final Map<Class<? extends Component>, Class<? extends Component>> typeClasses = new HashMap<Class<? extends Component>, Class<? extends Component>>();
     private final Map<Class<? extends Component>, Method[]> typeMethods = new HashMap<Class<? extends Component>, Method[]>();
@@ -93,8 +95,7 @@ public class Presentation {
      * @return A method in this presentation.
      */
     protected Method method(String name) {
-        Method method = ReflectTools.findMethod(getClass(), name, View.class,
-                Component.class);
+        Method method = ReflectTools.findMethod(getClass(), name, View.class);
         return AccessController.doPrivileged(new AccessibleMethod(method));
     }
 
@@ -167,13 +168,19 @@ public class Presentation {
 
         content.accept(rendition, this);
 
-        rendition.addStyleName(name.toLowerCase().replace(' ', '-'));
+        rendition.addStyleName(style(name));
+
         rendition.setSizeUndefined();
 
         init(content, rendition, typeMethods.get(type));
         init(content, rendition, nameMethods.get(name));
 
         return rendition;
+    }
+
+    private String style(String name) {
+        return name.replaceAll(WHITESPACE, "-").replaceAll(INVALID_CSS, "")
+                .toLowerCase();
     }
 
     /**
