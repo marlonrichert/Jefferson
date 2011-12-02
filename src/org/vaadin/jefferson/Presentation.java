@@ -92,10 +92,12 @@ public class Presentation {
      * 
      * @param name
      *            The name of the method to return.
+     * @param base
+     *            The type of rendition this method will accept.
      * @return A method in this presentation.
      */
-    protected Method method(String name) {
-        Method method = ReflectTools.findMethod(getClass(), name, View.class);
+    protected Method method(String name, Class<? extends Component> base) {
+        Method method = ReflectTools.findMethod(getClass(), name, base);
         return AccessController.doPrivileged(new AccessibleMethod(method));
     }
 
@@ -247,7 +249,9 @@ public class Presentation {
         if (methods != null) {
             for (Method method : methods) {
                 try {
-                    method.invoke(Presentation.this, content, component);
+                    method.invoke(Presentation.this, component);
+                } catch (IllegalArgumentException e) {
+                    // ignore this method and try the next one
                 } catch (Exception e) {
                     throw new ExceptionInInitializerError(e);
                 }
