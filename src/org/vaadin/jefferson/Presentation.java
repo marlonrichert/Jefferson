@@ -21,7 +21,6 @@ import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.vaadin.jefferson.content.View;
 
 import com.vaadin.tools.ReflectTools;
 import com.vaadin.ui.Component;
@@ -29,7 +28,7 @@ import com.vaadin.ui.Component;
 /**
  * A presentation of some Vaadin content. The normal usage is to define some
  * rules using its various <code>define(…)</code> methods and then call
- * {@link #visit(View)}.
+ * {@link #render(View)}.
  * 
  * @author Marlon Richert @ Vaadin
  */
@@ -145,7 +144,7 @@ public class Presentation {
      * this presentation.
      * <p>
      * After instantiating the rendition, it passes it to
-     * {@link View#accept(Component, Presentation)}. It then sets the size of
+     * {@link View#update(Component, Presentation)}. It then sets the size of
      * the content's rendition to
      * {@link com.vaadin.ui.Component#setSizeUndefined() undefined} and adds a
      * CSS-friendly {@link com.vaadin.ui.Component#addStyleName(String) style
@@ -160,7 +159,7 @@ public class Presentation {
      *            The content hierarchy to render.
      * @return The top-level rendition component of the hierarchy.
      */
-    public <T extends Component> T visit(View<T> content) {
+    public <T extends Component> T render(View<T> content) {
         String name = content.getName();
 
         @SuppressWarnings("rawtypes")
@@ -168,7 +167,7 @@ public class Presentation {
 
         T rendition = create(content);
 
-        content.accept(rendition, this);
+        content.update(rendition, this);
 
         rendition.addStyleName(style(name));
 

@@ -13,11 +13,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.vaadin.jefferson.content;
+package org.vaadin.jefferson;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-
-import org.vaadin.jefferson.Presentation;
+import java.util.List;
 
 import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.CssLayout;
@@ -31,7 +31,7 @@ import com.vaadin.ui.CssLayout;
  * @author Marlon Richert @ Vaadin
  */
 public class Composite<T extends ComponentContainer> extends View<T> {
-    private View<?>[] children;
+    private List<View<?>> children = new ArrayList<View<?>>();
 
     /**
      * @see #create(String, Class, Class)
@@ -46,12 +46,18 @@ public class Composite<T extends ComponentContainer> extends View<T> {
     protected Composite(String name, Class<T> base, Class<? extends T> impl,
             View<?>... children) {
         super(name, base, impl);
-        this.children = children;
+        setChildren(children);
     }
 
     public static Composite<ComponentContainer> create(String name) {
         return new Composite<ComponentContainer>(name,
                 ComponentContainer.class, CssLayout.class);
+    }
+
+    public static Composite<ComponentContainer> create(String name,
+            View<?>... children) {
+        return new Composite<ComponentContainer>(name,
+                ComponentContainer.class, CssLayout.class, children);
     }
 
     /**
@@ -100,13 +106,14 @@ public class Composite<T extends ComponentContainer> extends View<T> {
 
     /**
      * Sets this view's rendering component and calls
-     * {@link Presentation#visit(View)} for each of its children.
+     * {@link Presentation#render(View)} for each of its children.
      */
     @Override
-    public void accept(T rendition, Presentation presentation) {
-        super.accept(rendition, presentation);
+    protected void update(T rendition, Presentation presentation) {
+        super.update(rendition, presentation);
         for (View<?> child : children) {
-            rendition.addComponent(presentation.visit(child));
+            rendition.replaceComponent(child.getRendition(),
+                    presentation.render(child));
         }
     }
 
@@ -116,7 +123,7 @@ public class Composite<T extends ComponentContainer> extends View<T> {
      * @return This view's child content nodes.
      */
     public View<?>[] getChildren() {
-        return Arrays.copyOf(children, children.length);
+        return children.toArray(new View<?>[children.size()]);
     }
 
     /**
@@ -126,7 +133,18 @@ public class Composite<T extends ComponentContainer> extends View<T> {
      *            This view's child content nodes.
      */
     public Composite<T> setChildren(View<?>... children) {
-        this.children = children;
+        this.children = Arrays.asList(children);
         return this;
+    }
+
+    public boolean replaceChild(View<?> existing, View<?> replacement) {
+        int i = children.indexOf(existing);
+        if (i == -1) {
+            return false;
+        }
+        children.set(i, replacement);
+        getRendition().replaceComponent(existing.getRendition(),
+                replacement.getRendition());
+        return true;
     }
 }

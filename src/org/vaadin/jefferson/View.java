@@ -13,9 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.vaadin.jefferson.content;
-
-import org.vaadin.jefferson.Presentation;
+package org.vaadin.jefferson;
 
 import com.vaadin.ui.Component;
 
@@ -40,6 +38,15 @@ public class View<T extends Component> {
         this.name = name;
         this.base = base;
         this.fallback = fallback;
+        setRendition(createFallback());
+    }
+
+    protected T createFallback() {
+        try {
+            return fallback.newInstance();
+        } catch (Exception e) {
+            throw new ExceptionInInitializerError(e);
+        }
     }
 
     public static <B extends Component> View<B> create(String name,
@@ -87,7 +94,7 @@ public class View<T extends Component> {
 
     /**
      * Gets the default class used for rendering this view. Called by
-     * {@link Presentation#visit(View)} if it cannot find any rules to
+     * {@link Presentation#render(View)} if it cannot find any rules to
      * instantiate this content with.
      * 
      * @return A class that can be instantiated as a fall-back rendition.
@@ -99,7 +106,7 @@ public class View<T extends Component> {
     /**
      * Sets this view's rendering component.
      * <p>
-     * Called by {@link Presentation#visit(View)}.
+     * Called by {@link Presentation#render(View)}.
      * 
      * @param component
      *            This view's new rendering component.
@@ -107,13 +114,13 @@ public class View<T extends Component> {
      *            The presentation that called this method.
      * @see #setRendition(Component)
      */
-    public void accept(T component, Presentation presentation) {
+    protected void update(T component, Presentation presentation) {
         setRendition(component);
     }
 
     /**
      * Sets the component that is used for rendering this view. Called by
-     * {@link #accept(Component, Presentation)}
+     * {@link #update(Component, Presentation)}
      * 
      * @param rendition
      *            The component that renders this content.
@@ -132,7 +139,7 @@ public class View<T extends Component> {
      * 
      * @return The component that renders this content.
      */
-    public T getRendition() {
+    protected T getRendition() {
         return rendition;
     }
 }
