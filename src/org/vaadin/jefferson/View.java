@@ -30,15 +30,17 @@ public class View<T extends Component> {
     private final Class<? extends T> fallback;
 
     private T rendition;
+    private Presentation presentation;
 
-    /**
-     * @see #create(String, Class, Class)
-     */
-    protected View(String name, Class<T> base, Class<? extends T> fallback) {
+    public View(String name, Class<T> base) {
+        this(name, base, base);
+    }
+
+    public View(String name, Class<T> base, Class<? extends T> fallback) {
         this.name = name;
         this.base = base;
         this.fallback = fallback;
-        setRendition(createFallback());
+        // setRendition(createFallback());
     }
 
     protected T createFallback() {
@@ -47,31 +49,6 @@ public class View<T extends Component> {
         } catch (Exception e) {
             throw new ExceptionInInitializerError(e);
         }
-    }
-
-    public static <B extends Component> View<B> create(String name,
-            Class<B> base) {
-        return new View<B>(name, base, base);
-    }
-
-    /**
-     * Creates a new view.
-     * 
-     * @param <B>
-     *            The view's base rendering class.
-     * @param name
-     *            The view's name.
-     * @param base
-     *            The view's base rendering class.
-     * @param fallback
-     *            The view's fallback rendering class.
-     * @see #getName()
-     * @see #getBase()
-     * @see #getFallback()
-     */
-    public static <B extends Component> View<B> create(String name,
-            Class<B> base, Class<? extends B> impl) {
-        return new View<B>(name, base, impl);
     }
 
     /**
@@ -110,12 +87,21 @@ public class View<T extends Component> {
      * 
      * @param component
      *            This view's new rendering component.
-     * @param presentation
+     * @param p
      *            The presentation that called this method.
      * @see #setRendition(Component)
      */
-    protected void update(T component, Presentation presentation) {
+    protected void update(T component, Presentation p) {
         setRendition(component);
+        setPresentation(p);
+    }
+
+    private void setPresentation(Presentation presentation) {
+        this.presentation = presentation;
+    }
+
+    protected Presentation getPresentation() {
+        return presentation;
     }
 
     /**
@@ -139,7 +125,7 @@ public class View<T extends Component> {
      * 
      * @return The component that renders this content.
      */
-    protected T getRendition() {
+    public T getRendition() {
         return rendition;
     }
 }

@@ -15,12 +15,10 @@
  */
 package org.vaadin.jefferson;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import com.vaadin.ui.ComponentContainer;
-import com.vaadin.ui.CssLayout;
 
 /**
  * A {@link View} with child views, rendered as a subclass of
@@ -31,99 +29,16 @@ import com.vaadin.ui.CssLayout;
  * @author Marlon Richert @ Vaadin
  */
 public class Composite<T extends ComponentContainer> extends View<T> {
-    private List<View<?>> children = new ArrayList<View<?>>();
+    private Map<String, View<?>> children = new LinkedHashMap<String, View<?>>();
 
-    /**
-     * @see #create(String, Class, Class)
-     */
-    protected Composite(String name, Class<T> base, Class<? extends T> impl) {
-        this(name, base, impl, new View[] {});
+    public Composite(String name, Class<T> base, Class<? extends T> impl) {
+        super(name, base, impl);
     }
 
-    /**
-     * @see #create(String, Class, Class, View...)
-     */
-    protected Composite(String name, Class<T> base, Class<? extends T> impl,
+    public Composite(String name, Class<T> base, Class<? extends T> impl,
             View<?>... children) {
         super(name, base, impl);
         setChildren(children);
-    }
-
-    public static Composite<ComponentContainer> create(String name) {
-        return new Composite<ComponentContainer>(name,
-                ComponentContainer.class, CssLayout.class);
-    }
-
-    public static Composite<ComponentContainer> create(String name,
-            View<?>... children) {
-        return new Composite<ComponentContainer>(name,
-                ComponentContainer.class, CssLayout.class, children);
-    }
-
-    /**
-     * Creates a new view with the given name. Children can be added through
-     * {@link #setChildren(View...)}.
-     * 
-     * @param <B>
-     *            The view's base rendering class.
-     * @param name
-     *            The view's name.
-     * @param base
-     *            The view's base rendering class.
-     * @param impl
-     *            The view's fall-back rendering class.
-     * @see #getName()
-     * @see #getBase()
-     * @see #getFallback()
-     */
-    public static <B extends ComponentContainer> Composite<B> create(
-            String name, Class<B> base, Class<? extends B> impl) {
-        return new Composite<B>(name, base, impl);
-    }
-
-    /**
-     * Creates a new view with the given name and children.
-     * 
-     * @param <B>
-     *            The view's base rendering class.
-     * @param name
-     *            The view's name.
-     * @param base
-     *            The view's base rendering class.
-     * @param impl
-     *            The view's fall-back rendering class.
-     * @param children
-     *            The view's child content nodes.
-     * @see #getName()
-     * @see #getBase()
-     * @see #getFallback()
-     */
-    public static <B extends ComponentContainer> Composite<B> create(
-            String name, Class<B> base, Class<? extends B> impl,
-            View<?>... children) {
-        return new Composite<B>(name, base, impl, children);
-    }
-
-    /**
-     * Sets this view's rendering component and calls
-     * {@link Presentation#render(View)} for each of its children.
-     */
-    @Override
-    protected void update(T rendition, Presentation presentation) {
-        super.update(rendition, presentation);
-        for (View<?> child : children) {
-            rendition.replaceComponent(child.getRendition(),
-                    presentation.render(child));
-        }
-    }
-
-    /**
-     * Gets this view's children.
-     * 
-     * @return This view's child content nodes.
-     */
-    public View<?>[] getChildren() {
-        return children.toArray(new View<?>[children.size()]);
     }
 
     /**
@@ -133,18 +48,52 @@ public class Composite<T extends ComponentContainer> extends View<T> {
      *            This view's child content nodes.
      */
     public Composite<T> setChildren(View<?>... children) {
-        this.children = Arrays.asList(children);
+        T rendition = getRendition();
+        if (rendition != null) {
+            rendition.removeAllComponents();
+        }
+        for (View<?> child : children) {
+            this.children.put(child.getName(), child);
+        }
         return this;
     }
 
+    /**
+     * Sets this view's rendering component and calls
+     * {@link Presentation#render(View)} for each of its children.
+     */
+    @Override
+    protected void update(T rendition, Presentation presentation) {
+        super.update(rendition, presentation);
+        renderChildren();
+    }
+
+    protected void renderChildren() {
+        T rendition = getRendition();
+        rendition.removeAllComponents();
+        for (View<?> child : children.values()) {
+            rendition.addComponent(getPresentation().render(child));
+        }
+    }
+
+    /**
+     * Gets this view's children.
+     * 
+     * @return This view's child content nodes.
+     */
+    public View<?>[] getChildren() {
+        return children.values().toArray(new View<?>[children.size()]);
+    }
+
     public boolean replaceChild(View<?> existing, View<?> replacement) {
-        int i = children.indexOf(existing);
-        if (i == -1) {
+        String oldName = existing.getName();
+        if (!children.containsKey(oldName)) {
             return false;
         }
-        children.set(i, replacement);
+        children.remove(oldName);
+        children.put(replacement.getName(), replacement);
         getRendition().replaceComponent(existing.getRendition(),
-                replacement.getRendition());
+                getPresentation().render(replacement));
         return true;
     }
 }
