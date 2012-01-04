@@ -31,6 +31,7 @@ public class View<T extends Component> {
 
     private T rendition;
     private Presentation presentation;
+    private View<?> parent;
 
     public View(String name, Class<T> base) {
         this(name, base, base);
@@ -71,7 +72,7 @@ public class View<T extends Component> {
 
     /**
      * Gets the default class used for rendering this view. Called by
-     * {@link Presentation#render(View)} if it cannot find any rules to
+     * {@link Presentation#visit(View)} if it cannot find any rules to
      * instantiate this content with.
      * 
      * @return A class that can be instantiated as a fall-back rendition.
@@ -83,17 +84,26 @@ public class View<T extends Component> {
     /**
      * Sets this view's rendering component.
      * <p>
-     * Called by {@link Presentation#render(View)}.
+     * Called by {@link Presentation#visit(View)}.
      * 
-     * @param component
-     *            This view's new rendering component.
      * @param p
      *            The presentation that called this method.
+     * @param component
+     *            This view's new rendering component.
+     * 
      * @see #setRendition(Component)
      */
-    protected void update(T component, Presentation p) {
+    protected void accept(Presentation p, T component) {
         setRendition(component);
         setPresentation(p);
+    }
+
+    void setParent(View<?> parent) {
+        this.parent = parent;
+    }
+
+    public View<?> getParent() {
+        return parent;
     }
 
     private void setPresentation(Presentation presentation) {
@@ -106,7 +116,7 @@ public class View<T extends Component> {
 
     /**
      * Sets the component that is used for rendering this view. Called by
-     * {@link #update(Component, Presentation)}
+     * {@link #accept(Presentation, Component)}
      * 
      * @param rendition
      *            The component that renders this content.

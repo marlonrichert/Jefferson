@@ -16,8 +16,8 @@ public class ButtonView extends View<Button> {
     }
 
     @Override
-    public void update(Button component, Presentation presentation) {
-        super.update(component, presentation);
+    public void accept(Presentation presentation, Button component) {
+        super.accept(presentation, component);
         component.addListener(listener);
     }
 }

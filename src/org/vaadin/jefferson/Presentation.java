@@ -15,12 +15,10 @@
  */
 package org.vaadin.jefferson;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.HashMap;
-import java.util.Map;
-
 
 import com.vaadin.tools.ReflectTools;
 import com.vaadin.ui.Component;
@@ -28,123 +26,20 @@ import com.vaadin.ui.Component;
 /**
  * A presentation of some Vaadin content. The normal usage is to define some
  * rules using its various <code>define(…)</code> methods and then call
- * {@link #render(View)}.
+ * {@link #visit(View)}.
  * 
  * @author Marlon Richert @ Vaadin
  */
 public class Presentation {
     private static final String INVALID_CSS = "[^-_a-zA-Z]";
     private static final String WHITESPACE = "\\s+";
-    private final Map<String, Class<? extends Component>> nameClasses = new HashMap<String, Class<? extends Component>>();
-    private final Map<Class<? extends Component>, Class<? extends Component>> typeClasses = new HashMap<Class<? extends Component>, Class<? extends Component>>();
-    private final Map<Class<? extends Component>, Method[]> typeMethods = new HashMap<Class<? extends Component>, Method[]>();
-    private final Map<String, Method[]> nameMethods = new HashMap<String, Method[]>();
-
-    /**
-     * Defines a rule that a {@link View} with the given name should be rendered
-     * as an instance of the given subclass of {@link Component}. If this is not
-     * possible at run-time, the given rule will be ignored. Instantiation is
-     * done by calling the String-arg or (if that fails) no-args constructor of
-     * the given class.
-     * <p>
-     * Rules defined with this method take precedence over those defined with
-     * {@link #define(Class, Class)}.
-     * 
-     * @param name
-     *            The content's name.
-     * @param impl
-     *            The class to use for rendering.
-     */
-    public void define(String name, Class<? extends Component> impl) {
-        nameClasses.put(name, impl);
-    }
-
-    /**
-     * Defines a rule that a {@link View} with the given base rendition type
-     * should be rendered as an instance of the given subclass of
-     * {@link Component}. If this is not possible at run-time, the given rule
-     * will be ignored. Instantiation is done by calling the String-arg or (if
-     * that fails) no-args constructor of the given class.
-     * <p>
-     * Rules defined with {@link #define(String, Class)} take precedence over
-     * those defined with this method.
-     * <p>
-     * 
-     * @param base
-     *            The content's base rendition class.
-     * @param impl
-     *            The class to actually use for rendering.
-     */
-    public void define(Class<? extends Component> base,
-            Class<? extends Component> impl) {
-        if (!base.isAssignableFrom(impl)) {
-            throw new IllegalArgumentException(base
-                    + " is not a superclass of " + impl);
-        }
-        typeClasses.put(base, impl);
-    }
-
-    /**
-     * Returns the method in this presentation that has the signature
-     * <code>name(View, Component)</code>. Convenience method for use with
-     * {@link #define(Class, Method)} and {@link #define(String, Method)}.
-     * 
-     * @param name
-     *            The name of the method to return.
-     * @param base
-     *            The type of rendition this method will accept.
-     * @return A method in this presentation.
-     */
-    protected Method method(String name, Class<? extends Component> base) {
-        Method method = ReflectTools.findMethod(getClass(), name, base);
-        return AccessController.doPrivileged(new AccessibleMethod(method));
-    }
-
-    /**
-     * Defines a rule that a {@link View} with the given name should be
-     * initialized by a method with the given name in this presentation. The
-     * actual method should be defined in this presentation by sub-classing and
-     * should have the signature <code>methodName(View, Component)</code>.
-     * <p>
-     * Rules defined by this method are applied <i>after</i> those defined by
-     * {@link #define(Class, String)}.
-     * 
-     * @param name
-     *            The content's name.
-     * @param methods
-     *            Methods in this presentation.
-     * @see #method(String)
-     */
-    public void define(String name, Method... methods) {
-        nameMethods.put(name, methods);
-    }
-
-    /**
-     * Defines a rule that a {@link View} with the given base rendition type
-     * should be initialized by a method with the given name in this
-     * presentation. The actual method should be defined in this presentation by
-     * sub-classing and should have the signature
-     * <code>methodName(View, Component)</code>.
-     * <p>
-     * Rules defined by this method are applied <i>before</i> those defined by
-     * {@link #define(Class, String)}.
-     * 
-     * @param base
-     *            The content's base rendition class.
-     * @param methods
-     *            Methods in this presentation.
-     * @see #method(String)
-     */
-    public void define(Class<? extends Component> base, Method... methods) {
-        typeMethods.put(base, methods);
-    }
 
     /**
      * Renders the given {@link View content} according to the rules defined in
      * this presentation.
      * <p>
      * After instantiating the rendition, it passes it to
-     * {@link View#update(Component, Presentation)}. It then sets the size of
+     * {@link View#accept(Presentation, Component)}. It then sets the size of
      * the content's rendition to
      * {@link com.vaadin.ui.Component#setSizeUndefined() undefined} and adds a
      * CSS-friendly {@link com.vaadin.ui.Component#addStyleName(String) style
@@ -155,107 +50,57 @@ public class Presentation {
      * 
      * @param <T>
      *            The base type of the rendition.
-     * @param content
+     * @param view
      *            The content hierarchy to render.
      * @return The top-level rendition component of the hierarchy.
      */
-    public <T extends Component> T render(View<T> content) {
-        String name = content.getName();
+    public <T extends Component> T visit(View<T> view) {
+        @SuppressWarnings("unchecked")
+        T rendition = (T) call("create", view, view.getFallback());
 
-        @SuppressWarnings("rawtypes")
-        Class<? extends View> type = content.getClass();
+        view.accept(this, rendition);
 
-        T rendition = create(content);
-
-        content.update(rendition, this);
-
-        rendition.addStyleName(style(name));
-
-        rendition.setSizeUndefined();
-
-        init(content, rendition, typeMethods.get(type));
-        init(content, rendition, nameMethods.get(name));
+        call("visit", view, rendition);
 
         return rendition;
+    }
+
+    protected Component create(View<?> content, Component fallback) {
+        return fallback;
+    }
+
+    protected void visit(View<?> view, Component rendition) {
+        rendition.addStyleName(style(view.getName()));
+        rendition.setSizeUndefined();
+    }
+
+    private Object call(String name, Object... params) {
+        Method method = getMethod(name, getTypes(params));
+        try {
+            return method.invoke(Presentation.this, params);
+        } catch (IllegalAccessException e) {
+            throw new ExceptionInInitializerError(e);
+        } catch (InvocationTargetException e) {
+            throw new ExceptionInInitializerError(e);
+        }
+    }
+
+    private Method getMethod(String name, Class<?>... paramTypes) {
+        return AccessController.doPrivileged(new AccessibleMethod(
+                ReflectTools.findMethod(getClass(), name, paramTypes)));
+    }
+
+    private Class<?>[] getTypes(Object... params) {
+        Class<?>[] paramTypes = new Class<?>[params.length];
+        for (int i = 0; i < params.length; i++) {
+            paramTypes[i] = params[i].getClass();
+        }
+        return paramTypes;
     }
 
     private String style(String name) {
         return name.replaceAll(WHITESPACE, "-").replaceAll(INVALID_CSS, "")
                 .toLowerCase();
-    }
-
-    /**
-     * Instantiates a rendition for the given content. If any rules are defined
-     * for the given content, it will use those rules to instantiate the
-     * rendition (if possible). If not, it will instantiate the content's
-     * {@link View#getFallback() fall-back rendering class}.
-     * 
-     * @param content
-     *            The content node to render.
-     * @return An uninitialized rendition of the given content node.
-     */
-    protected <T extends Component> T create(View<T> content) {
-        Class<T> impl = getRenderingClass(content);
-
-        try {
-            try {
-                return impl.getConstructor(String.class).newInstance(
-                        content.getName());
-            } catch (NoSuchMethodException e) {
-                return impl.getConstructor().newInstance();
-            }
-        } catch (Exception e) {
-            throw new ExceptionInInitializerError(e);
-        }
-    }
-
-    /**
-     * Gets the given content's rendering class. If there is a class defined for
-     * the content's name, it will return that. If not, it will the class
-     * defined for implementing the content's base rendering class. If that
-     * fails, too, it simply return the content's fallback.
-     * 
-     * @param content
-     *            The view to render.
-     * @return A subclass of the view's base rendering class.
-     */
-    @SuppressWarnings("unchecked")
-    protected <T extends Component> Class<T> getRenderingClass(View<T> content) {
-        Class<T> base = content.getBase();
-        Class<T> impl = (Class<T>) nameClasses.get(content.getName());
-        if (impl == null || !base.isAssignableFrom(impl)) {
-            impl = (Class<T>) typeClasses.get(content.getClass());
-            if (impl == null || !base.isAssignableFrom(impl)) {
-                impl = (Class<T>) content.getFallback();
-            }
-        }
-        return impl;
-    }
-
-    /**
-     * Initializes the given component by calling
-     * <code>Presentation.this.methodName(content, component)</code>.
-     * 
-     * @param content
-     *            The content for which the given component was rendered.
-     * @param component
-     *            The component used to render the given content.
-     * @param methodName
-     *            The name of the method with which to initialize the given
-     *            component.
-     */
-    protected void init(View<?> content, Component component, Method... methods) {
-        if (methods != null) {
-            for (Method method : methods) {
-                try {
-                    method.invoke(Presentation.this, component);
-                } catch (IllegalArgumentException e) {
-                    // ignore this method and try the next one
-                } catch (Exception e) {
-                    throw new ExceptionInInitializerError(e);
-                }
-            }
-        }
     }
 
     private final static class AccessibleMethod implements

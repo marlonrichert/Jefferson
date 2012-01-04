@@ -15,8 +15,8 @@
  */
 package org.vaadin.jefferson;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import com.vaadin.ui.ComponentContainer;
 
@@ -29,7 +29,7 @@ import com.vaadin.ui.ComponentContainer;
  * @author Marlon Richert @ Vaadin
  */
 public class Composite<T extends ComponentContainer> extends View<T> {
-    private Map<String, View<?>> children = new LinkedHashMap<String, View<?>>();
+    private Set<View<?>> children = new LinkedHashSet<View<?>>();
 
     public Composite(String name, Class<T> base, Class<? extends T> impl) {
         super(name, base, impl);
@@ -53,26 +53,27 @@ public class Composite<T extends ComponentContainer> extends View<T> {
             rendition.removeAllComponents();
         }
         for (View<?> child : children) {
-            this.children.put(child.getName(), child);
+            this.children.add(child);
+            child.setParent(this);
         }
         return this;
     }
 
     /**
      * Sets this view's rendering component and calls
-     * {@link Presentation#render(View)} for each of its children.
+     * {@link Presentation#visit(View)} for each of its children.
      */
     @Override
-    protected void update(T rendition, Presentation presentation) {
-        super.update(rendition, presentation);
-        renderChildren();
+    protected void accept(Presentation presentation, T rendition) {
+        super.accept(presentation, rendition);
+        visitChildren();
     }
 
-    protected void renderChildren() {
+    protected void visitChildren() {
         T rendition = getRendition();
         rendition.removeAllComponents();
-        for (View<?> child : children.values()) {
-            rendition.addComponent(getPresentation().render(child));
+        for (View<?> child : children) {
+            rendition.addComponent(getPresentation().visit(child));
         }
     }
 
@@ -82,18 +83,19 @@ public class Composite<T extends ComponentContainer> extends View<T> {
      * @return This view's child content nodes.
      */
     public View<?>[] getChildren() {
-        return children.values().toArray(new View<?>[children.size()]);
+        return children.toArray(new View<?>[children.size()]);
     }
 
     public boolean replaceChild(View<?> existing, View<?> replacement) {
-        String oldName = existing.getName();
-        if (!children.containsKey(oldName)) {
+        if (!children.contains(existing)) {
             return false;
         }
-        children.remove(oldName);
-        children.put(replacement.getName(), replacement);
-        getRendition().replaceComponent(existing.getRendition(),
-                getPresentation().render(replacement));
+        existing.setParent(null);
+        replacement.setParent(this);
+        children.remove(existing);
+        children.add(replacement);
+        getRendition().replaceComponent(
+                existing.getRendition(), getPresentation().visit(replacement));
         return true;
     }
 }
