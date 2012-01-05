@@ -9,10 +9,10 @@ import com.vaadin.ui.CssLayout;
 public class SimpleComposite extends Composite<ComponentContainer> {
 
     public SimpleComposite(String name) {
-        super(name, ComponentContainer.class, CssLayout.class);
+        super(name, ComponentContainer.class, new CssLayout());
     }
 
     public SimpleComposite(String name, View<?>... children) {
-        super(name, ComponentContainer.class, CssLayout.class, children);
+        super(name, ComponentContainer.class, new CssLayout(), children);
     }
 }

@@ -25,31 +25,30 @@ import com.vaadin.ui.Component;
  * @author Marlon Richert @ Vaadin
  */
 public class View<T extends Component> {
-    private final String name;
-    private final Class<T> base;
-    private final Class<? extends T> fallback;
+    private String name;
+    private Class<T> base;
+    private T fallback;
 
     private T rendition;
     private Presentation presentation;
-    private View<?> parent;
+    private Composite<?> parent;
 
     public View(String name, Class<T> base) {
-        this(name, base, base);
+        this.name = name;
+        this.base = base;
+        try {
+            this.fallback = base.newInstance();
+        } catch (InstantiationException e) {
+            throw new ExceptionInInitializerError(e);
+        } catch (IllegalAccessException e) {
+            throw new ExceptionInInitializerError(e);
+        }
     }
 
-    public View(String name, Class<T> base, Class<? extends T> fallback) {
+    public View(String name, Class<T> base, T fallback) {
         this.name = name;
         this.base = base;
         this.fallback = fallback;
-        // setRendition(createFallback());
-    }
-
-    protected T createFallback() {
-        try {
-            return fallback.newInstance();
-        } catch (Exception e) {
-            throw new ExceptionInInitializerError(e);
-        }
     }
 
     /**
@@ -70,15 +69,12 @@ public class View<T extends Component> {
         return base;
     }
 
-    /**
-     * Gets the default class used for rendering this view. Called by
-     * {@link Presentation#visit(View)} if it cannot find any rules to
-     * instantiate this content with.
-     * 
-     * @return A class that can be instantiated as a fall-back rendition.
-     */
-    public Class<? extends T> getFallback() {
-        return fallback;
+    public T getFallback() {
+        try {
+            return fallback;
+        } catch (Exception e) {
+            throw new ExceptionInInitializerError(e);
+        }
     }
 
     /**
@@ -93,16 +89,15 @@ public class View<T extends Component> {
      * 
      * @see #setRendition(Component)
      */
-    protected void accept(Presentation p, T component) {
-        setRendition(component);
+    protected void accept(Presentation p) {
         setPresentation(p);
     }
 
-    void setParent(View<?> parent) {
+    void setParent(Composite<?> parent) {
         this.parent = parent;
     }
 
-    public View<?> getParent() {
+    public Composite<?> getParent() {
         return parent;
     }
 
@@ -115,19 +110,30 @@ public class View<T extends Component> {
     }
 
     /**
-     * Sets the component that is used for rendering this view. Called by
-     * {@link #accept(Presentation, Component)}
+     * Sets this view's rendition. Does nothing and returns <code>false</code>
+     * if the given rendition is the same as this view' current one; otherwise,
+     * replaces this view's rendition with the given one and returns
+     * <code>true</code>.
      * 
      * @param rendition
-     *            The component that renders this content.
+     *            The new rendering component.
+     * @return <code>true</code> if this action resulted in any changes;
+     *         <code>false</code> if it did not.
      */
-    protected void setRendition(T rendition) {
+    protected boolean setRendition(T rendition) {
+        if (this.rendition == rendition) {
+            return false;
+        }
         Class<? extends Component> renditionClass = rendition.getClass();
         if (!base.isAssignableFrom(renditionClass)) {
             throw new IllegalArgumentException(base
                     + " is not a superclass of " + renditionClass);
         }
+        if (parent != null) {
+            parent.notify(this, rendition);
+        }
         this.rendition = rendition;
+        return true;
     }
 
     /**

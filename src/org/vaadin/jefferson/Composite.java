@@ -18,6 +18,7 @@ package org.vaadin.jefferson;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentContainer;
 
 /**
@@ -31,13 +32,13 @@ import com.vaadin.ui.ComponentContainer;
 public class Composite<T extends ComponentContainer> extends View<T> {
     private Set<View<?>> children = new LinkedHashSet<View<?>>();
 
-    public Composite(String name, Class<T> base, Class<? extends T> impl) {
-        super(name, base, impl);
+    public Composite(String name, Class<T> base, T fallback) {
+        super(name, base, fallback);
     }
 
-    public Composite(String name, Class<T> base, Class<? extends T> impl,
+    public Composite(String name, Class<T> base, T fallback,
             View<?>... children) {
-        super(name, base, impl);
+        this(name, base, fallback);
         setChildren(children);
     }
 
@@ -64,17 +65,23 @@ public class Composite<T extends ComponentContainer> extends View<T> {
      * {@link Presentation#visit(View)} for each of its children.
      */
     @Override
-    protected void accept(Presentation presentation, T rendition) {
-        super.accept(presentation, rendition);
-        visitChildren();
+    protected void accept(Presentation presentation) {
+        super.accept(presentation);
+        for (View<?> child : children) {
+            presentation.visit(child);
+        }
     }
 
-    protected void visitChildren() {
-        T rendition = getRendition();
-        rendition.removeAllComponents();
-        for (View<?> child : children) {
-            rendition.addComponent(getPresentation().visit(child));
-        }
+    /**
+     * Notifies this composite view that the given child is about to set its
+     * rendition.
+     * 
+     * @param child
+     *            The child notifying this parent.
+     * @param newRendition
+     */
+    protected void notify(View<?> child, Component newRendition) {
+        getRendition().replaceComponent(child.getRendition(), newRendition);
     }
 
     /**

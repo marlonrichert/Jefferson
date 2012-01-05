@@ -20,64 +20,44 @@ import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
-import com.vaadin.tools.ReflectTools;
 import com.vaadin.ui.Component;
 
 /**
- * A presentation of some Vaadin content. The normal usage is to define some
- * rules using its various <code>define(…)</code> methods and then call
- * {@link #visit(View)}.
- * 
  * @author Marlon Richert @ Vaadin
  */
 public class Presentation {
+    private static final String CREATE = "create";
+    private static final String STYLE = "style";
     private static final String INVALID_CSS = "[^-_a-zA-Z]";
     private static final String WHITESPACE = "\\s+";
 
-    /**
-     * Renders the given {@link View content} according to the rules defined in
-     * this presentation.
-     * <p>
-     * After instantiating the rendition, it passes it to
-     * {@link View#accept(Presentation, Component)}. It then sets the size of
-     * the content's rendition to
-     * {@link com.vaadin.ui.Component#setSizeUndefined() undefined} and adds a
-     * CSS-friendly {@link com.vaadin.ui.Component#addStyleName(String) style
-     * name} to it by converting the content's name to lower-case and replacing
-     * spaces with hyphens (-). Finally, it passes the rendition any
-     * rule-defined methods.
-     * <p>
-     * 
-     * @param <T>
-     *            The base type of the rendition.
-     * @param view
-     *            The content hierarchy to render.
-     * @return The top-level rendition component of the hierarchy.
-     */
     public <T extends Component> T visit(View<T> view) {
         @SuppressWarnings("unchecked")
-        T rendition = (T) call("create", view, view.getFallback());
+        T rendition = (T) call(CREATE, view);
 
-        view.accept(this, rendition);
+        view.setRendition(rendition);
+        view.accept(this);
 
-        call("visit", view, rendition);
+        call(STYLE, view);
 
         return rendition;
     }
 
-    protected Component create(View<?> content, Component fallback) {
-        return fallback;
+    protected Component create(View<?> view) {
+        return view.getFallback();
     }
 
-    protected void visit(View<?> view, Component rendition) {
-        rendition.addStyleName(style(view.getName()));
+    protected void style(View<?> view) {
+        Component rendition = view.getRendition();
+        rendition.addStyleName(view.getName().replaceAll(
+                WHITESPACE, "-").replaceAll(INVALID_CSS, "").toLowerCase());
         rendition.setSizeUndefined();
     }
 
-    private Object call(String name, Object... params) {
-        Method method = getMethod(name, getTypes(params));
+    private Object call(String name, View<?> view) {
+        Method method = getMethod(name, view);
         try {
-            return method.invoke(Presentation.this, params);
+            return method.invoke(this, view);
         } catch (IllegalAccessException e) {
             throw new ExceptionInInitializerError(e);
         } catch (InvocationTargetException e) {
@@ -85,22 +65,24 @@ public class Presentation {
         }
     }
 
-    private Method getMethod(String name, Class<?>... paramTypes) {
-        return AccessController.doPrivileged(new AccessibleMethod(
-                ReflectTools.findMethod(getClass(), name, paramTypes)));
-    }
-
-    private Class<?>[] getTypes(Object... params) {
-        Class<?>[] paramTypes = new Class<?>[params.length];
-        for (int i = 0; i < params.length; i++) {
-            paramTypes[i] = params[i].getClass();
+    private Method getMethod(String name, View<?> view) {
+        Class<?> presentationCls = getClass();
+        while (presentationCls != null) {
+            Class<?> viewCls = view.getClass();
+            while (viewCls != null) {
+                try {
+                    Method method = presentationCls.getDeclaredMethod(
+                            name, viewCls);
+                    return AccessController.doPrivileged(
+                            new AccessibleMethod(method));
+                } catch (NoSuchMethodException e) {
+                    viewCls = viewCls.getSuperclass();
+                }
+            }
+            presentationCls = presentationCls.getSuperclass();
         }
-        return paramTypes;
-    }
-
-    private String style(String name) {
-        return name.replaceAll(WHITESPACE, "-").replaceAll(INVALID_CSS, "")
-                .toLowerCase();
+        throw new ExceptionInInitializerError("Can't find any method "
+                + getClass() + "." + name + "(" + view.getClass() + ").");
     }
 
     private final static class AccessibleMethod implements

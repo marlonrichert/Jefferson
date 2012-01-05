@@ -8,6 +8,6 @@ import com.vaadin.ui.NativeSelect;
 public class SelectionView extends View<AbstractSelect> {
 
     public SelectionView(String name) {
-        super(name, AbstractSelect.class, NativeSelect.class);
+        super(name, AbstractSelect.class, new NativeSelect());
     }
 }
