@@ -49,15 +49,62 @@ public class Composite<T extends ComponentContainer> extends View<T> {
      *            This view's child content nodes.
      */
     public Composite<T> setChildren(View<?>... children) {
-        T rendition = getRendition();
-        if (rendition != null) {
-            rendition.removeAllComponents();
+        for (View<?> child : this.children) {
+            child.setParent(null);
         }
+        this.children.clear();
         for (View<?> child : children) {
             this.children.add(child);
             child.setParent(this);
         }
+
+        T ownRendition = getRendition();
+        if (ownRendition != null) {
+            ownRendition.removeAllComponents();
+            for (View<?> child : children) {
+                Component childRendition = child.getRendition();
+                if (childRendition != null) {
+                    ownRendition.addComponent(childRendition);
+                }
+            }
+        }
+
         return this;
+    }
+
+    public boolean replaceChild(View<?> oldChild, View<?> newChild) {
+        if (oldChild == newChild) {
+            return false;
+        }
+
+        if (children.contains(oldChild)) {
+            oldChild.setParent(null);
+            children.remove(oldChild);
+        }
+        update(oldChild.getRendition(), newChild.getRendition());
+        children.add(newChild);
+        newChild.setParent(this);
+        Presentation presentation = getPresentation();
+        if (presentation != null) {
+            presentation.visit(newChild);
+        }
+        return true;
+    }
+
+    void update(Component oldRendition, Component newRendition) {
+        T ownRendition = getRendition();
+        if (ownRendition != null) {
+            if (oldRendition != null
+                    && oldRendition.getParent() == ownRendition) {
+                if (newRendition != null) {
+                    ownRendition.replaceComponent(oldRendition, newRendition);
+                } else {
+                    ownRendition.removeComponent(oldRendition);
+                }
+            } else if (newRendition != null) {
+                ownRendition.addComponent(newRendition);
+            }
+        }
     }
 
     /**
@@ -73,36 +120,11 @@ public class Composite<T extends ComponentContainer> extends View<T> {
     }
 
     /**
-     * Notifies this composite view that the given child is about to set its
-     * rendition.
-     * 
-     * @param child
-     *            The child notifying this parent.
-     * @param newRendition
-     */
-    protected void notify(View<?> child, Component newRendition) {
-        getRendition().replaceComponent(child.getRendition(), newRendition);
-    }
-
-    /**
      * Gets this view's children.
      * 
      * @return This view's child content nodes.
      */
     public View<?>[] getChildren() {
         return children.toArray(new View<?>[children.size()]);
-    }
-
-    public boolean replaceChild(View<?> existing, View<?> replacement) {
-        if (!children.contains(existing)) {
-            return false;
-        }
-        existing.setParent(null);
-        replacement.setParent(this);
-        children.remove(existing);
-        children.add(replacement);
-        getRendition().replaceComponent(
-                existing.getRendition(), getPresentation().visit(replacement));
-        return true;
     }
 }

@@ -34,21 +34,24 @@ public class View<T extends Component> {
     private Composite<?> parent;
 
     public View(String name, Class<T> base) {
-        this.name = name;
-        this.base = base;
-        try {
-            this.fallback = base.newInstance();
-        } catch (InstantiationException e) {
-            throw new ExceptionInInitializerError(e);
-        } catch (IllegalAccessException e) {
-            throw new ExceptionInInitializerError(e);
-        }
+        this(name, base, createFallback(base));
     }
 
     public View(String name, Class<T> base, T fallback) {
         this.name = name;
         this.base = base;
         this.fallback = fallback;
+    }
+
+    private static <S extends Component> S createFallback(Class<S> type)
+            throws ExceptionInInitializerError {
+        try {
+            return type.newInstance();
+        } catch (InstantiationException e) {
+            throw new ExceptionInInitializerError(e);
+        } catch (IllegalAccessException e) {
+            throw new ExceptionInInitializerError(e);
+        }
     }
 
     /**
@@ -130,7 +133,7 @@ public class View<T extends Component> {
                     + " is not a superclass of " + renditionClass);
         }
         if (parent != null) {
-            parent.notify(this, rendition);
+            parent.update(this.rendition, rendition);
         }
         this.rendition = rendition;
         return true;
