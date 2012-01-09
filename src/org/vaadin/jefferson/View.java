@@ -98,6 +98,7 @@ public class View<T extends Component> {
 
     void setParent(Composite<?> parent) {
         this.parent = parent;
+        setRendition(null);
     }
 
     public Composite<?> getParent() {

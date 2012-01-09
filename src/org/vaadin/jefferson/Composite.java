@@ -81,9 +81,9 @@ public class Composite<T extends ComponentContainer> extends View<T> {
             children.remove(oldChild);
             oldChild.setParent(null);
         }
-        update(oldChild.getRendition(), newChild.getRendition());
         children.add(newChild);
         newChild.setParent(this);
+        update(oldChild.getRendition(), newChild.getRendition());
         Presentation presentation = getPresentation();
         if (presentation != null) {
             presentation.visit(newChild);
@@ -126,5 +126,13 @@ public class Composite<T extends ComponentContainer> extends View<T> {
      */
     public View<?>[] getChildren() {
         return children.toArray(new View<?>[children.size()]);
+    }
+
+    @Override
+    protected boolean setRendition(T rendition) {
+        for (View<?> child : getChildren()) {
+            child.setRendition(null);
+        }
+        return super.setRendition(rendition);
     }
 }
