@@ -44,7 +44,7 @@ public class Presentation {
     }
 
     protected Component render(View<?> view) {
-        return view.getFallback();
+        return view.createFallback();
     }
 
     protected void style(View<?> view) {

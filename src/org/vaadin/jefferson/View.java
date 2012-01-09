@@ -24,35 +24,20 @@ import com.vaadin.ui.Component;
  *            This view's base rendering class.
  * @author Marlon Richert @ Vaadin
  */
-public class View<T extends Component> {
+public abstract class View<T extends Component> {
     private String name;
     private Class<T> base;
-    private T fallback;
 
     private T rendition;
     private Presentation presentation;
     private Composite<?> parent;
 
     public View(String name, Class<T> base) {
-        this(name, base, createFallback(base));
-    }
-
-    public View(String name, Class<T> base, T fallback) {
         this.name = name;
         this.base = base;
-        this.fallback = fallback;
     }
 
-    private static <S extends Component> S createFallback(Class<S> type)
-            throws ExceptionInInitializerError {
-        try {
-            return type.newInstance();
-        } catch (InstantiationException e) {
-            throw new ExceptionInInitializerError(e);
-        } catch (IllegalAccessException e) {
-            throw new ExceptionInInitializerError(e);
-        }
-    }
+    public abstract T createFallback();
 
     /**
      * Gets this view's name.
@@ -72,33 +57,16 @@ public class View<T extends Component> {
         return base;
     }
 
-    public T getFallback() {
-        try {
-            return fallback;
-        } catch (Exception e) {
-            throw new ExceptionInInitializerError(e);
-        }
-    }
-
-    /**
-     * Sets this view's rendering component.
-     * <p>
-     * Called by {@link Presentation#visit(View)}.
-     * 
-     * @param p
-     *            The presentation that called this method.
-     * @param component
-     *            This view's new rendering component.
-     * 
-     * @see #setRendition(Component)
-     */
-    protected void accept(Presentation p) {
+    protected T accept(Presentation p) {
         setPresentation(p);
+        return rendition;
     }
 
     void setParent(Composite<?> parent) {
         this.parent = parent;
-        setRendition(null);
+        if (parent == null) {
+            setRendition(null);
+        }
     }
 
     public Composite<?> getParent() {

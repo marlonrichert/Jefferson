@@ -29,16 +29,15 @@ import com.vaadin.ui.ComponentContainer;
  *            This view's base rendering class.
  * @author Marlon Richert @ Vaadin
  */
-public class Composite<T extends ComponentContainer> extends View<T> {
+public abstract class Composite<T extends ComponentContainer> extends View<T> {
     private Set<View<?>> children = new LinkedHashSet<View<?>>();
 
-    public Composite(String name, Class<T> base, T fallback) {
-        super(name, base, fallback);
+    public Composite(String name, Class<T> base) {
+        super(name, base);
     }
 
-    public Composite(String name, Class<T> base, T fallback,
-            View<?>... children) {
-        this(name, base, fallback);
+    public Composite(String name, Class<T> base, View<?>... children) {
+        this(name, base);
         setChildren(children);
     }
 
@@ -72,18 +71,25 @@ public class Composite<T extends ComponentContainer> extends View<T> {
         return this;
     }
 
-    public boolean replaceChild(View<?> oldChild, View<?> newChild) {
+    public <X extends Component, Y extends Component> boolean replaceChild(
+            View<X> oldChild, View<Y> newChild) {
         if (oldChild == newChild) {
             return false;
         }
+
+        newChild.setRendition(newChild.createFallback());
+
+        Component oldRendition = oldChild.getRendition();
+        Component newRendition = newChild.getRendition();
 
         if (children.contains(oldChild)) {
             children.remove(oldChild);
             oldChild.setParent(null);
         }
+        update(oldRendition, newRendition);
         children.add(newChild);
         newChild.setParent(this);
-        update(oldChild.getRendition(), newChild.getRendition());
+
         Presentation presentation = getPresentation();
         if (presentation != null) {
             presentation.visit(newChild);
@@ -112,11 +118,12 @@ public class Composite<T extends ComponentContainer> extends View<T> {
      * {@link Presentation#visit(View)} for each of its children.
      */
     @Override
-    protected void accept(Presentation presentation) {
-        super.accept(presentation);
+    protected T accept(Presentation presentation) {
+        T rendition = super.accept(presentation);
         for (View<?> child : children) {
             presentation.visit(child);
         }
+        return rendition;
     }
 
     /**
@@ -130,8 +137,10 @@ public class Composite<T extends ComponentContainer> extends View<T> {
 
     @Override
     protected boolean setRendition(T rendition) {
-        for (View<?> child : getChildren()) {
-            child.setRendition(null);
+        if (rendition == null) {
+            for (View<?> child : getChildren()) {
+                child.setRendition(null);
+            }
         }
         return super.setRendition(rendition);
     }
