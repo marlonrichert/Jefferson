@@ -128,10 +128,12 @@ public class View<T extends Component> {
         if (this.rendition == rendition) {
             return false;
         }
-        Class<? extends Component> renditionClass = rendition.getClass();
-        if (!base.isAssignableFrom(renditionClass)) {
-            throw new IllegalArgumentException(base
-                    + " is not a superclass of " + renditionClass);
+        if (rendition != null) {
+            Class<? extends Component> renditionClass = rendition.getClass();
+            if (!base.isAssignableFrom(renditionClass)) {
+                throw new IllegalArgumentException(base
+                        + " is not a superclass of " + renditionClass);
+            }
         }
         if (parent != null) {
             parent.update(this.rendition, rendition);
