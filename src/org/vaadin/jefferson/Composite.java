@@ -78,8 +78,8 @@ public class Composite<T extends ComponentContainer> extends View<T> {
         }
 
         if (children.contains(oldChild)) {
-            oldChild.setParent(null);
             children.remove(oldChild);
+            oldChild.setParent(null);
         }
         update(oldChild.getRendition(), newChild.getRendition());
         children.add(newChild);

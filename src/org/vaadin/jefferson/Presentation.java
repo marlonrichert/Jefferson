@@ -26,14 +26,14 @@ import com.vaadin.ui.Component;
  * @author Marlon Richert @ Vaadin
  */
 public class Presentation {
-    private static final String CREATE = "create";
+    private static final String RENDER = "render";
     private static final String STYLE = "style";
     private static final String INVALID_CSS = "[^-_a-zA-Z]";
     private static final String WHITESPACE = "\\s+";
 
     public <T extends Component> T visit(View<T> view) {
         @SuppressWarnings("unchecked")
-        T rendition = (T) call(CREATE, view);
+        T rendition = (T) call(RENDER, view);
 
         view.setRendition(rendition);
         view.accept(this);
@@ -43,7 +43,7 @@ public class Presentation {
         return rendition;
     }
 
-    protected Component create(View<?> view) {
+    protected Component render(View<?> view) {
         return view.getFallback();
     }
 
