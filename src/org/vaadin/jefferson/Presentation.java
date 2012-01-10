@@ -23,6 +23,18 @@ import java.security.PrivilegedAction;
 import com.vaadin.ui.Component;
 
 /**
+ * A mechanism for rendering and styling a content tree, composed of
+ * {@link Composite}s and descendant {@link View}s.
+ * <p>
+ * To define your own renditions and styles for specific view classes, inherit
+ * from this class and create methods with the following signatures, replacing
+ * <code>T</code> with the type of view you want to render or style:
+ * 
+ * <pre>
+ *      Component render(T view)
+ *      void style(T view)
+ * </pre>
+ * 
  * @author Marlon Richert @ Vaadin
  */
 public class Presentation {
@@ -31,6 +43,14 @@ public class Presentation {
     private static final String INVALID_CSS = "[^-_a-zA-Z]";
     private static final String WHITESPACE = "\\s+";
 
+    /**
+     * Renders the given view, calls {@link View#accept(Presentation)} and then
+     * styles the view's rendition.
+     * 
+     * @param view
+     *            The view to render and style.
+     * @return The view's new rendition.
+     */
     public <T extends Component> T visit(View<T> view) {
         @SuppressWarnings("unchecked")
         T rendition = (T) call(RENDER, view);
@@ -43,10 +63,16 @@ public class Presentation {
         return rendition;
     }
 
+    /**
+     * Calls {@link View#createFallback()}.
+     */
     protected Component render(View<?> view) {
         return view.createFallback();
     }
 
+    /**
+     * Provides the given view's rendition with basic styling.
+     */
     protected void style(View<?> view) {
         Component rendition = view.getRendition();
         rendition.addStyleName(view.getName().replaceAll(

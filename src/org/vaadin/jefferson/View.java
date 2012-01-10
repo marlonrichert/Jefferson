@@ -18,10 +18,12 @@ package org.vaadin.jefferson;
 import com.vaadin.ui.Component;
 
 /**
- * A content node.
+ * A content node that allows itself to be rendered as a Vaadin
+ * {@link Component}. Convenience implementations for specific types of
+ * renditions can be found in the {@link org.vaadin.jefferson.content} package.
  * 
  * @param <T>
- *            This view's base rendering class.
+ *            The base class of this view's rendition.
  * @author Marlon Richert @ Vaadin
  */
 public abstract class View<T extends Component> {
@@ -32,11 +34,23 @@ public abstract class View<T extends Component> {
     private Presentation presentation;
     private Composite<?> parent;
 
+    /**
+     * Creates a new view.
+     * 
+     * @see #getName()
+     * @see #getBase()
+     */
     public View(String name, Class<T> base) {
         this.name = name;
         this.base = base;
     }
 
+    /**
+     * Creates a fallback rendition, in case the {@link Presentation} visiting
+     * this view does not know how to render it.
+     * 
+     * @return A newly-created rendition.
+     */
     public abstract T createFallback();
 
     /**
@@ -49,7 +63,7 @@ public abstract class View<T extends Component> {
     }
 
     /**
-     * Gets the class whose interface renditions of this view should implement.
+     * Gets the class from which this view's rendition should inherit.
      * 
      * @return The return type of {@link #getRendition()}.
      */
@@ -57,6 +71,9 @@ public abstract class View<T extends Component> {
         return base;
     }
 
+    /**
+     * Accepts the given presentation and returns this view's rendition.
+     */
     protected T accept(Presentation p) {
         setPresentation(p);
         return rendition;
@@ -69,6 +86,11 @@ public abstract class View<T extends Component> {
         }
     }
 
+    /**
+     * Gets this view's parent view.
+     * 
+     * @return <code>null</code>, if this view does not belong to any parent.
+     */
     public Composite<?> getParent() {
         return parent;
     }
@@ -77,6 +99,11 @@ public abstract class View<T extends Component> {
         this.presentation = presentation;
     }
 
+    /**
+     * Gets the presentation that most recently visited this view.
+     * 
+     * @see #accept(Presentation)
+     */
     protected Presentation getPresentation() {
         return presentation;
     }

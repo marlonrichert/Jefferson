@@ -22,7 +22,7 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentContainer;
 
 /**
- * A {@link View} with child views, rendered as a subclass of
+ * A {@link View} that can contain child views, rendered as a subclass of
  * {@link com.vaadin.ui.ComponentContainer}.
  * 
  * @param <T>
@@ -32,20 +32,32 @@ import com.vaadin.ui.ComponentContainer;
 public abstract class Composite<T extends ComponentContainer> extends View<T> {
     private Set<View<?>> children = new LinkedHashSet<View<?>>();
 
+    /**
+     * Creates a new composite view without children.
+     * 
+     * @see View#View(String, Class)
+     */
     public Composite(String name, Class<T> base) {
         super(name, base);
     }
 
+    /**
+     * Creates a new composite view containing the given children.
+     * 
+     * @param children
+     *            This composite view's content.
+     * @see View#View(String, Class)
+     */
     public Composite(String name, Class<T> base, View<?>... children) {
         this(name, base);
         setChildren(children);
     }
 
     /**
-     * Sets this view's children.
+     * Sets this composite's child views.
      * 
      * @param children
-     *            This view's child content nodes.
+     *            This composite view's content.
      */
     public Composite<T> setChildren(View<?>... children) {
         for (View<?> child : this.children) {
@@ -71,28 +83,67 @@ public abstract class Composite<T extends ComponentContainer> extends View<T> {
         return this;
     }
 
+    /**
+     * Accepts the given presentation and calls {@link Presentation#visit(View)}
+     * for each of this composite's children.
+     */
+    @Override
+    protected T accept(Presentation presentation) {
+        T rendition = super.accept(presentation);
+        for (View<?> child : children) {
+            presentation.visit(child);
+        }
+        return rendition;
+    }
+
+    /**
+     * Sets this composite's rendition. If the given rendition is
+     * <code>null</code>, it will also clear the rendition of each of this
+     * composite's children.
+     */
+    @Override
+    protected boolean setRendition(T rendition) {
+        if (rendition == null) {
+            for (View<?> child : getChildren()) {
+                child.setRendition(null);
+            }
+        }
+        return super.setRendition(rendition);
+    }
+
+    /**
+     * Replaces the given existing child in this composite view with the given
+     * replacement child.
+     * 
+     * @param existing
+     *            The old child to replace.
+     * @param replacement
+     *            The new child with which to replace the old one.
+     * @return <code>true</code> if this resulted in any changes; otherwise,
+     *         <code>false</code>
+     */
     public <X extends Component, Y extends Component> boolean replaceChild(
-            View<X> oldChild, View<Y> newChild) {
-        if (oldChild == newChild) {
+            View<X> existing, View<Y> replacement) {
+        if (existing == replacement) {
             return false;
         }
 
-        newChild.setRendition(newChild.createFallback());
+        replacement.setRendition(replacement.createFallback());
 
-        Component oldRendition = oldChild.getRendition();
-        Component newRendition = newChild.getRendition();
+        Component oldRendition = existing.getRendition();
+        Component newRendition = replacement.getRendition();
 
-        if (children.contains(oldChild)) {
-            children.remove(oldChild);
-            oldChild.setParent(null);
+        if (children.contains(existing)) {
+            children.remove(existing);
+            existing.setParent(null);
         }
         update(oldRendition, newRendition);
-        children.add(newChild);
-        newChild.setParent(this);
+        children.add(replacement);
+        replacement.setParent(this);
 
         Presentation presentation = getPresentation();
         if (presentation != null) {
-            presentation.visit(newChild);
+            presentation.visit(replacement);
         }
         return true;
     }
@@ -114,34 +165,11 @@ public abstract class Composite<T extends ComponentContainer> extends View<T> {
     }
 
     /**
-     * Sets this view's rendering component and calls
-     * {@link Presentation#visit(View)} for each of its children.
-     */
-    @Override
-    protected T accept(Presentation presentation) {
-        T rendition = super.accept(presentation);
-        for (View<?> child : children) {
-            presentation.visit(child);
-        }
-        return rendition;
-    }
-
-    /**
      * Gets this view's children.
      * 
      * @return This view's child content nodes.
      */
     public View<?>[] getChildren() {
         return children.toArray(new View<?>[children.size()]);
-    }
-
-    @Override
-    protected boolean setRendition(T rendition) {
-        if (rendition == null) {
-            for (View<?> child : getChildren()) {
-                child.setRendition(null);
-            }
-        }
-        return super.setRendition(rendition);
     }
 }
