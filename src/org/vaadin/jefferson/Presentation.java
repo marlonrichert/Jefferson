@@ -58,6 +58,8 @@ public class Presentation {
         view.setRendition(rendition);
         view.accept(this);
 
+        rendition.addStyleName(view.getName().replaceAll(
+                WHITESPACE, "-").replaceAll(INVALID_CSS, "").toLowerCase());
         call(STYLE, view);
 
         return rendition;
@@ -74,10 +76,7 @@ public class Presentation {
      * Provides the given view's rendition with basic styling.
      */
     protected void style(View<?> view) {
-        Component rendition = view.getRendition();
-        rendition.addStyleName(view.getName().replaceAll(
-                WHITESPACE, "-").replaceAll(INVALID_CSS, "").toLowerCase());
-        rendition.setSizeUndefined();
+        view.getRendition().setSizeUndefined();
     }
 
     private Object call(String name, View<?> view) {
