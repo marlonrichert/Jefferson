@@ -54,10 +54,20 @@ public abstract class Composite<T extends ComponentContainer> extends View<T> {
     }
 
     /**
-     * Sets this composite's child views.
+     * Sets this composite's child views. Returns a convenience reference to
+     * this composite, so you can easily do things like this:
+     * 
+     * <pre>
+     * parent.setChildren(
+     *     child1.setChildren(
+     *         grandChild1,
+     *         grandChild2)
+     *     child2)
+     * </pre>
      * 
      * @param children
      *            This composite view's content.
+     * @return This composite.
      */
     public Composite<T> setChildren(View<?>... children) {
         for (View<?> child : this.children) {
