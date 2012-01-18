@@ -81,10 +81,11 @@ public class Presentation {
     }
 
     /**
-     * Convenience method for maximizing a rendition's size.
+     * Convenience method for setting the rendition's expand ratio to 1.
+     * 
+     * @see AbstractOrderedLayout#setExpandRatio(Component, float)
      */
     protected static void expand(Component rendition) {
-        rendition.setSizeFull();
         Component parentRendition = rendition.getParent();
         if (parentRendition instanceof AbstractOrderedLayout) {
             ((AbstractOrderedLayout) parentRendition).setExpandRatio(
