@@ -15,19 +15,27 @@
  */
 package org.vaadin.jefferson.content;
 
-import org.vaadin.jefferson.View;
+import org.vaadin.jefferson.Control;
 
-import com.vaadin.ui.AbstractSelect;
-import com.vaadin.ui.NativeSelect;
+import com.vaadin.event.FieldEvents.TextChangeListener;
+import com.vaadin.ui.AbstractTextField;
+import com.vaadin.ui.TextField;
 
-public class SelectionView extends View<AbstractSelect> {
+public class TextControl extends Control<AbstractTextField, TextChangeListener> {
 
-    public SelectionView(String name) {
-        super(name, AbstractSelect.class);
+    public TextControl(String name) {
+        super(name, AbstractTextField.class, TextChangeListener.class);
+    }
+
+    public TextControl(String name, TextChangeListener listener) {
+        this(name);
+        setListener(listener);
     }
 
     @Override
-    public AbstractSelect createFallback() {
-        return new NativeSelect();
+    public AbstractTextField createFallback() {
+        TextField rendition = new TextField();
+        rendition.setInputPrompt(getName());
+        return rendition;
     }
 }

@@ -20,6 +20,7 @@ import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
+import com.vaadin.ui.AbstractOrderedLayout;
 import com.vaadin.ui.Component;
 
 /**
@@ -77,6 +78,18 @@ public class Presentation {
      */
     protected void style(View<?> view) {
         view.getRendition().setSizeUndefined();
+    }
+
+    /**
+     * Convenience method for maximizing a rendition's size.
+     */
+    protected static void expand(Component rendition) {
+        rendition.setSizeFull();
+        Component parentRendition = rendition.getParent();
+        if (parentRendition instanceof AbstractOrderedLayout) {
+            ((AbstractOrderedLayout) parentRendition).setExpandRatio(
+                    rendition, 1);
+        }
     }
 
     private Object call(String name, View<?> view) {
