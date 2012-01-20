@@ -126,8 +126,8 @@ public abstract class View<T extends Component> {
         if (rendition != null) {
             Class<? extends Component> renditionClass = rendition.getClass();
             if (!base.isAssignableFrom(renditionClass)) {
-                throw new IllegalArgumentException(base
-                        + " is not a superclass of " + renditionClass);
+                throw new IllegalArgumentException(
+                        base + " is not a superclass of " + renditionClass);
             }
         }
         if (parent != null) {
@@ -142,7 +142,7 @@ public abstract class View<T extends Component> {
      * 
      * @return The component that renders this content.
      */
-    public T getRendition() {
+    protected T getRendition() {
         return rendition;
     }
 }

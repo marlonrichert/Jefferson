@@ -77,7 +77,11 @@ public class Presentation {
      * Provides the given view's rendition with basic styling.
      */
     protected void style(View<?> view) {
-        view.getRendition().setSizeUndefined();
+        getRendition(view).setSizeUndefined();
+    }
+
+    protected <C extends Component> C getRendition(View<C> view) {
+        return view.getRendition();
     }
 
     /**
