@@ -75,8 +75,8 @@ public class SelectionControl<T>
             Object value = rendition.getValue();
             if (value instanceof Collection<?>) {
                 Collection<T> collection = (Collection<T>) value;
-                selection = collection.toArray((T[]) Array.newInstance(
-                        beanType, collection.size()));
+                selection = collection.toArray(
+                        (T[]) Array.newInstance(beanType, collection.size()));
             } else {
                 selection = (T[]) Array.newInstance(beanType, 1);
                 selection[0] = (T) value;
