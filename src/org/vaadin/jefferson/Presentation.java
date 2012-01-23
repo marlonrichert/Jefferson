@@ -53,24 +53,24 @@ public class Presentation {
      * @return The view's new rendition.
      */
     public <T extends Component> T visit(View<T> view) {
-        @SuppressWarnings("unchecked")
-        T rendition = (T) call(RENDER, view);
+        call(RENDER, view);
+        T rendition = view.getRendition();
 
-        view.setRendition(rendition);
         view.accept(this);
 
+        call(STYLE, view);
         rendition.addStyleName(view.getName().replaceAll(
                 WHITESPACE, "-").replaceAll(INVALID_CSS, "").toLowerCase());
-        call(STYLE, view);
 
         return rendition;
     }
 
     /**
-     * Calls {@link View#createFallback()}.
+     * Sets the given view's {@link View#createFallback()} method and sets its
+     * rendition to the result.
      */
-    protected Component render(View<?> view) {
-        return view.createFallback();
+    protected <T extends Component> void render(View<T> view) {
+        setRendition(view, view.createFallback());
     }
 
     /**
@@ -80,7 +80,11 @@ public class Presentation {
         getRendition(view).setSizeUndefined();
     }
 
-    protected <C extends Component> C getRendition(View<C> view) {
+    protected <T extends Component> void setRendition(View<T> view, T rendition) {
+        view.setRendition(rendition);
+    }
+
+    protected <T extends Component> T getRendition(View<T> view) {
         return view.getRendition();
     }
 
