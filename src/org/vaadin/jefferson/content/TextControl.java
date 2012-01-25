@@ -38,4 +38,13 @@ public class TextControl extends Control<AbstractTextField, TextChangeListener> 
         rendition.setInputPrompt(getName());
         return rendition;
     }
+
+    public String getText() {
+        AbstractTextField rendition = getRendition();
+        if (rendition == null) {
+            return "";
+        }
+        Object value = rendition.getValue();
+        return value == null ? "" : "" + value;
+    }
 }

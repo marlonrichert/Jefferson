@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 
 import com.vaadin.ui.AbstractComponent;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Field;
 
 /**
  * A {@link View} that can register a listener object to its rendition.
@@ -35,12 +36,8 @@ public abstract class Control<T extends Component, L> extends View<T> {
 
     public void setListener(L listener) {
         T rendition = getRendition();
-        if (rendition != null) {
-            if (this.listener != null) {
-                removeListener(rendition, this.listener);
-            }
-            addListener(rendition, this.listener);
-        }
+        removeListener(rendition, this.listener);
+        addListener(rendition, listener);
         this.listener = listener;
     }
 
@@ -51,24 +48,21 @@ public abstract class Control<T extends Component, L> extends View<T> {
     @Override
     protected T accept(Presentation presentation) {
         T rendition = super.accept(presentation);
-        if (listener != null) {
-            addListener(rendition, listener);
-        }
+        setListener(listener);
         return rendition;
     }
 
     @Override
     protected boolean setRendition(T rendition) {
-        T oldRendition = getRendition();
-        if (oldRendition != null) {
-            removeListener(oldRendition, listener);
-        }
+        removeListener(getRendition(), listener);
         return super.setRendition(rendition);
     }
 
-    private void removeListener(T rendition, L l) {
+    private void removeListener(T rendition, L handler) {
         try {
-            removeListener.invoke(rendition, l);
+            if (rendition != null && handler != null) {
+                removeListener.invoke(rendition, handler);
+            }
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         } catch (InvocationTargetException e) {
@@ -76,12 +70,19 @@ public abstract class Control<T extends Component, L> extends View<T> {
         }
     }
 
-    private void addListener(T rendition, L l) {
+    private void addListener(T rendition, L handler) {
         try {
-            if (rendition instanceof AbstractComponent) {
-                ((AbstractComponent) rendition).setImmediate(true);
+            if (rendition != null) {
+                if (rendition instanceof AbstractComponent) {
+                    ((AbstractComponent) rendition).setImmediate(true);
+                }
+                if (rendition instanceof Field) {
+                    ((Field) rendition).setWriteThrough(true);
+                }
+                if (handler != null) {
+                    addListener.invoke(rendition, handler);
+                }
             }
-            addListener.invoke(rendition, l);
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         } catch (InvocationTargetException e) {

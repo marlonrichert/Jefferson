@@ -28,30 +28,37 @@ import com.vaadin.ui.AbstractSelect;
 import com.vaadin.ui.NativeSelect;
 import com.vaadin.ui.Table;
 
-public class SelectionControl<T>
+public class SelectionControl<B>
         extends Control<AbstractSelect, ValueChangeListener> {
-    private Class<T> beanType;
-    private T[] choices;
-    private T[] selection;
+    private Class<B> beanType;
+    private BeanItemContainer<B> model;
+    private B[] selection;
 
     @SuppressWarnings("unchecked")
-    public SelectionControl(String name, Class<T> beanType) {
+    public SelectionControl(String name, Class<B> beanType) {
         super(name, AbstractSelect.class, ValueChangeListener.class);
         this.beanType = beanType;
-        choices = (T[]) Array.newInstance(beanType, 0);
-        selection = (T[]) Array.newInstance(beanType, 0);
+        model = new BeanItemContainer<B>(beanType);
+        selection = (B[]) Array.newInstance(beanType, 0);
     }
 
-    public void setChoices(T... choices) {
+    public void setChoices(B... choices) {
+        setModel(new BeanItemContainer<B>(beanType, Arrays.asList(choices)));
+    }
+
+    public void setModel(BeanItemContainer<B> model) {
         AbstractSelect rendition = getRendition();
         if (rendition != null) {
-            rendition.setContainerDataSource(
-                    new BeanItemContainer<T>(beanType, Arrays.asList(choices)));
+            rendition.setContainerDataSource(model);
         }
-        this.choices = choices;
+        this.model = model;
     }
 
-    public void setSelection(T... selection) {
+    public BeanItemContainer<B> getModel() {
+        return model;
+    }
+
+    public void setSelection(B... selection) {
         AbstractSelect rendition = getRendition();
         if (rendition != null) {
             switch (selection.length) {
@@ -69,17 +76,17 @@ public class SelectionControl<T>
     }
 
     @SuppressWarnings("unchecked")
-    public T[] getSelection() {
+    public B[] getSelection() {
         AbstractSelect rendition = getRendition();
         if (rendition != null) {
             Object value = rendition.getValue();
             if (value instanceof Collection<?>) {
-                Collection<T> collection = (Collection<T>) value;
+                Collection<B> collection = (Collection<B>) value;
                 selection = collection.toArray(
-                        (T[]) Array.newInstance(beanType, collection.size()));
+                        (B[]) Array.newInstance(beanType, collection.size()));
             } else {
-                selection = (T[]) Array.newInstance(beanType, 1);
-                selection[0] = (T) value;
+                selection = (B[]) Array.newInstance(beanType, 1);
+                selection[0] = (B) value;
             }
         }
         return selection;
@@ -96,7 +103,7 @@ public class SelectionControl<T>
         if (rendition instanceof Table) {
             ((Table) rendition).setSelectable(true);
         }
-        setChoices(choices);
+        setModel(model);
         setSelection(selection);
         return rendition;
     }
