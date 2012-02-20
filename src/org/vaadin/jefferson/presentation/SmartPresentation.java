@@ -4,13 +4,17 @@ import org.vaadin.jefferson.Composite;
 import org.vaadin.jefferson.Presentation;
 import org.vaadin.jefferson.View;
 
+import com.vaadin.terminal.Sizeable;
 import com.vaadin.ui.AbstractSelect;
 import com.vaadin.ui.AbstractSplitPanel;
+import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.Form;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.HorizontalSplitPanel;
+import com.vaadin.ui.PasswordField;
+import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.VerticalSplitPanel;
 
@@ -35,12 +39,25 @@ public class SmartPresentation extends Presentation {
         } else if (stretches(view)) {
             rendition.setSizeFull();
             expand(rendition);
-        } else if (parentRendition instanceof HorizontalLayout) {
-            // ((HorizontalLayout) parentRendition).setComponentAlignment(
-            // rendition, Alignment.MIDDLE_LEFT);
-        } else if (parentRendition instanceof VerticalLayout) {
-            // ((VerticalLayout) parentRendition).setComponentAlignment(
-            // rendition, Alignment.TOP_CENTER);
+        } else {
+            rendition.setSizeUndefined();
+            Orientation parentOrientation = getOrientation(view.getParent());
+            if (parentOrientation == Orientation.VERTICAL) {
+                rendition.setWidth(100, Sizeable.UNITS_PERCENTAGE);
+                if (parentRendition instanceof VerticalLayout) {
+                    ((VerticalLayout) parentRendition).setComponentAlignment(
+                            rendition, Alignment.TOP_CENTER);
+                }
+            } else if (parentOrientation == Orientation.HORIZONTAL) {
+                if (!(rendition instanceof TextField || rendition instanceof PasswordField)) {
+                    rendition.setHeight(100, Sizeable.UNITS_PERCENTAGE);
+                }
+                if (parentRendition instanceof HorizontalLayout) {
+                    ((HorizontalLayout) parentRendition).setComponentAlignment(
+                            rendition, Alignment.MIDDLE_LEFT);
+                }
+            }
+
         }
     }
 
@@ -60,6 +77,10 @@ public class SmartPresentation extends Presentation {
         Composite<?> parent = view.getParent();
         setRendition(view, getRendition(view, invert(getOrientation(parent))));
     }
+
+    // void render(ButtonControl view) {
+    // setRendition(view, new Button(view.getName()));
+    // }
 
     private Orientation invert(Orientation input) {
         Orientation output = defaultOrientation;

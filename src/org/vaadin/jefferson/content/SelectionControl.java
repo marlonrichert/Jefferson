@@ -28,25 +28,25 @@ import com.vaadin.ui.AbstractSelect;
 import com.vaadin.ui.NativeSelect;
 import com.vaadin.ui.Table;
 
-public class SelectionControl<B>
+public class SelectionControl<T>
         extends Control<AbstractSelect, ValueChangeListener> {
-    private Class<B> beanType;
-    private BeanItemContainer<B> model;
-    private B[] selection;
+    private Class<T> beanType;
+    private BeanItemContainer<T> model;
+    private T[] selection;
 
     @SuppressWarnings("unchecked")
-    public SelectionControl(String name, Class<B> beanType) {
+    public SelectionControl(String name, Class<T> beanType) {
         super(name, AbstractSelect.class, ValueChangeListener.class);
         this.beanType = beanType;
-        model = new BeanItemContainer<B>(beanType);
-        selection = (B[]) Array.newInstance(beanType, 0);
+        model = new BeanItemContainer<T>(beanType);
+        selection = (T[]) Array.newInstance(beanType, 0);
     }
 
-    public void setChoices(B... choices) {
-        setModel(new BeanItemContainer<B>(beanType, Arrays.asList(choices)));
+    public void setChoices(T... choices) {
+        setModel(new BeanItemContainer<T>(beanType, Arrays.asList(choices)));
     }
 
-    public void setModel(BeanItemContainer<B> model) {
+    public void setModel(BeanItemContainer<T> model) {
         AbstractSelect rendition = getRendition();
         if (rendition != null) {
             rendition.setContainerDataSource(model);
@@ -54,11 +54,11 @@ public class SelectionControl<B>
         this.model = model;
     }
 
-    public BeanItemContainer<B> getModel() {
+    public BeanItemContainer<T> getModel() {
         return model;
     }
 
-    public void setSelection(B... selection) {
+    public void setSelection(T... selection) {
         AbstractSelect rendition = getRendition();
         if (rendition != null) {
             switch (selection.length) {
@@ -76,17 +76,17 @@ public class SelectionControl<B>
     }
 
     @SuppressWarnings("unchecked")
-    public B[] getSelection() {
+    public T[] getSelection() {
         AbstractSelect rendition = getRendition();
         if (rendition != null) {
             Object value = rendition.getValue();
             if (value instanceof Collection<?>) {
-                Collection<B> collection = (Collection<B>) value;
+                Collection<T> collection = (Collection<T>) value;
                 selection = collection.toArray(
-                        (B[]) Array.newInstance(beanType, collection.size()));
+                        (T[]) Array.newInstance(beanType, collection.size()));
             } else {
-                selection = (B[]) Array.newInstance(beanType, 1);
-                selection[0] = (B) value;
+                selection = (T[]) Array.newInstance(beanType, 1);
+                selection[0] = (T) value;
             }
         }
         return selection;
