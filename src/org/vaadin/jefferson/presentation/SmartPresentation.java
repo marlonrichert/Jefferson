@@ -104,12 +104,11 @@ public class SmartPresentation extends Presentation {
                 }
             }
         }
-        if (orientation == Orientation.HORIZONTAL) {
+        if (orientation == Orientation.HORIZONTAL
+                && !(getRendition(view.getParent()) instanceof AbstractSplitPanel)) {
             return new HorizontalLayout();
-        } else if (orientation == Orientation.VERTICAL) {
-            return new VerticalLayout();
         }
-        throw new IllegalArgumentException("orientation cannot be null");
+        return new VerticalLayout();
     }
 
     private boolean stretches(View<?> view) {

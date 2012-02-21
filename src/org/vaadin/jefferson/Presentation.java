@@ -85,7 +85,7 @@ public class Presentation {
     }
 
     protected <T extends Component> T getRendition(View<T> view) {
-        return view.getRendition();
+        return view == null ? null : view.getRendition();
     }
 
     /**
