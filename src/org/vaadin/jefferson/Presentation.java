@@ -39,8 +39,21 @@ import com.vaadin.ui.Component;
  * @author Marlon Richert @ Vaadin
  */
 public class Presentation {
-    private static final String RENDER = "render";
-    private static final String STYLE = "style";
+
+    protected enum MethodName {
+        RENDER, STYLE;
+
+        public String toCamelCase() {
+            String[] tokens = toString().split("_");
+            StringBuilder builder = new StringBuilder(tokens[0].toLowerCase());
+            for (int i = 1; i < tokens.length; i++) {
+                builder.append(tokens[i].substring(0, 1))
+                        .append(tokens[i].substring(1).toLowerCase());
+            }
+            return builder.toString();
+        }
+    }
+
     private static final String INVALID_CSS = "[^-_a-zA-Z]";
     private static final String WHITESPACE = "\\s+";
 
@@ -53,12 +66,12 @@ public class Presentation {
      * @return The view's new rendition.
      */
     public <T extends Component> T visit(View<T> view) {
-        call(RENDER, view);
+        call(MethodName.RENDER, view);
         T rendition = view.getRendition();
 
         view.accept(this);
 
-        call(STYLE, view);
+        call(MethodName.STYLE, view);
         rendition.addStyleName(view.getName().replaceAll(
                 WHITESPACE, "-").replaceAll(INVALID_CSS, "").toLowerCase());
 
@@ -101,8 +114,8 @@ public class Presentation {
         }
     }
 
-    private Object call(String name, View<?> view) {
-        Method method = getMethod(name, view);
+    protected Object call(MethodName methodName, View<?> view) {
+        Method method = getMethod(methodName.toCamelCase(), view);
         try {
             return method.invoke(this, view);
         } catch (IllegalAccessException e) {

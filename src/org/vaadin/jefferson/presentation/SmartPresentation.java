@@ -5,7 +5,6 @@ import org.vaadin.jefferson.Presentation;
 import org.vaadin.jefferson.View;
 
 import com.vaadin.terminal.Sizeable;
-import com.vaadin.ui.AbstractSelect;
 import com.vaadin.ui.AbstractSplitPanel;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Component;
@@ -13,8 +12,12 @@ import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.Form;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.HorizontalSplitPanel;
+import com.vaadin.ui.ListSelect;
 import com.vaadin.ui.PasswordField;
+import com.vaadin.ui.Table;
 import com.vaadin.ui.TextField;
+import com.vaadin.ui.Tree;
+import com.vaadin.ui.TwinColSelect;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.VerticalSplitPanel;
 
@@ -27,6 +30,23 @@ public class SmartPresentation extends Presentation {
 
     public SmartPresentation(Orientation orientation) {
         defaultOrientation = orientation;
+    }
+
+    protected void render(Composite<ComponentContainer> view) {
+        Composite<?> parent = view.getParent();
+        setRendition(view, getRendition(view, invert(getOrientation(parent))));
+    }
+
+    protected void style(Composite<?> view) {
+        ComponentContainer rendition = getRendition(view);
+        if (rendition instanceof AbstractSplitPanel) {
+            ((AbstractSplitPanel) rendition).setSplitPosition(50);
+        }
+        if (!stretches(view)) {
+            View<?>[] children = view.getChildren();
+            expand(getRendition(children[children.length - 1]));
+        }
+        style((View<?>) view);
     }
 
     @Override
@@ -43,10 +63,10 @@ public class SmartPresentation extends Presentation {
             rendition.setSizeUndefined();
             Orientation parentOrientation = getOrientation(view.getParent());
             if (parentOrientation == Orientation.VERTICAL) {
-                rendition.setWidth(100, Sizeable.UNITS_PERCENTAGE);
+                rendition.setSizeUndefined();
                 if (parentRendition instanceof VerticalLayout) {
                     ((VerticalLayout) parentRendition).setComponentAlignment(
-                            rendition, Alignment.TOP_CENTER);
+                            rendition, Alignment.TOP_LEFT);
                 }
             } else if (parentOrientation == Orientation.HORIZONTAL) {
                 if (!(rendition instanceof TextField || rendition instanceof PasswordField)) {
@@ -60,27 +80,6 @@ public class SmartPresentation extends Presentation {
 
         }
     }
-
-    void style(Composite<?> view) {
-        ComponentContainer rendition = getRendition(view);
-        if (rendition instanceof AbstractSplitPanel) {
-            ((AbstractSplitPanel) rendition).setSplitPosition(50);
-        }
-        if (!stretches(view)) {
-            View<?>[] children = view.getChildren();
-            expand(getRendition(children[children.length - 1]));
-        }
-        style((View<?>) view);
-    }
-
-    void render(Composite<ComponentContainer> view) {
-        Composite<?> parent = view.getParent();
-        setRendition(view, getRendition(view, invert(getOrientation(parent))));
-    }
-
-    // void render(ButtonControl view) {
-    // setRendition(view, new Button(view.getName()));
-    // }
 
     private Orientation invert(Orientation input) {
         Orientation output = defaultOrientation;
@@ -120,11 +119,16 @@ public class SmartPresentation extends Presentation {
             return stretches;
         }
         Component rendition = getRendition(view);
-        Class<?> cls = rendition == null
-                ? view.getBase()
-                : rendition.getClass();
-        return AbstractSelect.class.isAssignableFrom(cls)
-                || Form.class.isAssignableFrom(cls);
+        if (rendition == null) {
+            call(MethodName.RENDER, view);
+            rendition = getRendition(view);
+        }
+        Class<? extends Component> cls = rendition.getClass();
+        return Form.class.isAssignableFrom(cls)
+                || ListSelect.class.isAssignableFrom(cls)
+                || TwinColSelect.class.isAssignableFrom(cls)
+                || Table.class.isAssignableFrom(cls)
+                || Tree.class.isAssignableFrom(cls);
     }
 
     private Orientation getOrientation(View<?> view) {
