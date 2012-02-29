@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Implementation-Title: Jefferson
-Implementation-Version: 1.2.0
+Implementation-Version: 1.3.0
 Vaadin-Package-Version: 1
 Class-Path: 
 
