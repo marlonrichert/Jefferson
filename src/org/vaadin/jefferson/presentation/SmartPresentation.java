@@ -22,6 +22,8 @@ import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.VerticalSplitPanel;
 
 public class SmartPresentation extends Presentation {
+    private static final double GOLDEN_RATIO = 1.61803399;
+
     public enum Orientation {
         HORIZONTAL, VERTICAL,
     }
@@ -39,14 +41,38 @@ public class SmartPresentation extends Presentation {
 
     protected void style(Composite<?> view) {
         ComponentContainer rendition = getRendition(view);
+        View<?>[] children = view.getChildren();
         if (rendition instanceof AbstractSplitPanel) {
-            ((AbstractSplitPanel) rendition).setSplitPosition(50);
+            double weightA = 1;
+            double weightB = 1;
+            if (rendition instanceof HorizontalSplitPanel) {
+                if (containsTable(children[0])) {
+                    weightA = GOLDEN_RATIO;
+                }
+                if (containsTable(children[1])) {
+                    weightB = GOLDEN_RATIO;
+                }
+            }
+            ((AbstractSplitPanel) rendition).setSplitPosition(
+                    (int) (100 * weightA / (weightA + weightB)));
         }
         if (!stretches(view)) {
-            View<?>[] children = view.getChildren();
             expand(getRendition(children[children.length - 1]));
         }
         style((View<?>) view);
+    }
+
+    private boolean containsTable(View<?> view) {
+        if (!(view instanceof Composite<?>)) {
+            return getRendition(view) instanceof Table;
+        }
+        Composite<?> composite = (Composite<?>) view;
+        for (View<?> child : composite.getChildren()) {
+            if (containsTable(child)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -123,12 +149,11 @@ public class SmartPresentation extends Presentation {
             call(MethodName.RENDER, view);
             rendition = getRendition(view);
         }
-        Class<? extends Component> cls = rendition.getClass();
-        return Form.class.isAssignableFrom(cls)
-                || ListSelect.class.isAssignableFrom(cls)
-                || TwinColSelect.class.isAssignableFrom(cls)
-                || Table.class.isAssignableFrom(cls)
-                || Tree.class.isAssignableFrom(cls);
+        return rendition instanceof Form
+                || rendition instanceof ListSelect
+                || rendition instanceof TwinColSelect
+                || rendition instanceof Table
+                || rendition instanceof Tree;
     }
 
     private Orientation getOrientation(View<?> view) {
