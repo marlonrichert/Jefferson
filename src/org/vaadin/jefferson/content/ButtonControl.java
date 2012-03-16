@@ -1,7 +1,7 @@
 /*
  * Copyright 2011 Vaadin Ltd.
  * 
- * Licensed under the GNU Affero General Public License, Version 2 (the 
+ * Licensed under the GNU Affero General Public License, Version 3 (the 
  * "License"); you may not use this file except in compliance with the License. 
  * You may obtain a copy of the License at
  * 
@@ -24,11 +24,6 @@ import com.vaadin.ui.NativeButton;
 public class ButtonControl extends Control<Button, ClickListener> {
     public ButtonControl(String name) {
         super(name, Button.class, ClickListener.class);
-    }
-
-    public ButtonControl(String name, ClickListener listener) {
-        this(name);
-        setListener(listener);
     }
 
     @Override
