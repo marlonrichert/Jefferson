@@ -1,10 +1,8 @@
 package org.vaadin.jefferson;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
 
-import com.vaadin.ui.AbstractComponent;
-import com.vaadin.ui.Component;
+import com.vaadin.ui.*;
 import com.vaadin.ui.Field;
 
 /**
@@ -77,7 +75,7 @@ public abstract class Control<T extends Component, L> extends View<T> {
                     ((AbstractComponent) rendition).setImmediate(true);
                 }
                 if (rendition instanceof Field) {
-                    ((Field) rendition).setWriteThrough(true);
+                    ((Field<?>) rendition).setBuffered(false);
                 }
                 if (handler != null) {
                     addListener.invoke(rendition, handler);
