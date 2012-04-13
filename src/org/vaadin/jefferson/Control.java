@@ -27,11 +27,6 @@ public abstract class Control<T extends Component, L> extends View<T> {
         }
     }
 
-    public Control(String name, Class<T> base, Class<L> listenerBase, L listener) {
-        this(name, base, listenerBase);
-        setListener(listener);
-    }
-
     public void setListener(L listener) {
         T rendition = getRendition();
         removeListener(rendition, this.listener);
