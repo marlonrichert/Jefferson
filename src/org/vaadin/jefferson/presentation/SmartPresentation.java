@@ -1,25 +1,9 @@
 package org.vaadin.jefferson.presentation;
 
-import org.vaadin.jefferson.Composite;
-import org.vaadin.jefferson.Presentation;
-import org.vaadin.jefferson.View;
+import org.vaadin.jefferson.*;
 
-import com.vaadin.terminal.Sizeable;
-import com.vaadin.ui.AbstractSplitPanel;
-import com.vaadin.ui.Alignment;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentContainer;
-import com.vaadin.ui.Form;
-import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.HorizontalSplitPanel;
-import com.vaadin.ui.ListSelect;
-import com.vaadin.ui.PasswordField;
-import com.vaadin.ui.Table;
-import com.vaadin.ui.TextField;
-import com.vaadin.ui.Tree;
-import com.vaadin.ui.TwinColSelect;
-import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.VerticalSplitPanel;
+import com.vaadin.terminal.Sizeable.Unit;
+import com.vaadin.ui.*;
 
 public class SmartPresentation extends Presentation {
     private static final double GOLDEN_RATIO = 1.61803399;
@@ -96,7 +80,7 @@ public class SmartPresentation extends Presentation {
                 }
             } else if (parentOrientation == Orientation.HORIZONTAL) {
                 if (!(rendition instanceof TextField || rendition instanceof PasswordField)) {
-                    rendition.setHeight(100, Sizeable.UNITS_PERCENTAGE);
+                    rendition.setHeight(100, Unit.PERCENTAGE);
                 }
                 if (parentRendition instanceof HorizontalLayout) {
                     ((HorizontalLayout) parentRendition).setComponentAlignment(
