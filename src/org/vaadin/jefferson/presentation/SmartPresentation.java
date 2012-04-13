@@ -133,11 +133,15 @@ public class SmartPresentation extends Presentation {
             call(MethodName.RENDER, view);
             rendition = getRendition(view);
         }
-        return rendition instanceof Form
+
+        @SuppressWarnings("deprecation")
+        boolean stretches = rendition instanceof Form
                 || rendition instanceof ListSelect
                 || rendition instanceof TwinColSelect
                 || rendition instanceof Table
                 || rendition instanceof Tree;
+
+        return stretches;
     }
 
     private Orientation getOrientation(View<?> view) {
