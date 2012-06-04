@@ -16,17 +16,13 @@
 package org.vaadin.jefferson.content;
 
 import java.lang.reflect.Array;
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.*;
 
-import org.vaadin.jefferson.Control;
-import org.vaadin.jefferson.Presentation;
+import org.vaadin.jefferson.*;
 
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.data.util.BeanItemContainer;
-import com.vaadin.ui.AbstractSelect;
-import com.vaadin.ui.NativeSelect;
-import com.vaadin.ui.Table;
+import com.vaadin.ui.*;
 
 public class SelectionControl<T>
         extends Control<AbstractSelect, ValueChangeListener> {
@@ -34,7 +30,6 @@ public class SelectionControl<T>
     private BeanItemContainer<T> model;
     private T[] selection;
 
-    @SuppressWarnings("unchecked")
     public SelectionControl(String name, Class<T> beanType) {
         super(name, AbstractSelect.class, ValueChangeListener.class);
         this.beanType = beanType;
