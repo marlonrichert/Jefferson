@@ -1,4 +1,4 @@
 /**
- * {@link org.vaadin.jefferson.Presentation} classes.
+ * {@link org.vaadin.jefferson.Presenter} classes.
  */
 package org.vaadin.jefferson.presentation;

@@ -23,9 +23,9 @@ import com.vaadin.ui.Field;
 /**
  * A {@link View} that can register a controller object to its rendition.
  * 
- * @author Marlon Richert @ Vaadin
  * @param <C>
  *            The interface of this control's controller.
+ * @author Marlon Richert @ Vaadin
  */
 public abstract class Control<P extends Component, C> extends View<P> {
     private C controller;
@@ -48,7 +48,7 @@ public abstract class Control<P extends Component, C> extends View<P> {
     }
 
     public void setController(C listener) {
-        P rendition = getRendition();
+        P rendition = getPresentation();
         removeListener(rendition, this.controller);
         addListener(rendition, listener);
         this.controller = listener;
@@ -59,16 +59,16 @@ public abstract class Control<P extends Component, C> extends View<P> {
     }
 
     @Override
-    protected P accept(Presentation presentation) {
-        P rendition = super.accept(presentation);
+    protected P accept(Presenter presenter) {
+        P rendition = super.accept(presenter);
         setController(controller);
         return rendition;
     }
 
     @Override
-    protected boolean setRendition(P rendition) {
-        removeListener(getRendition(), controller);
-        return super.setRendition(rendition);
+    protected boolean setPresentation(P rendition) {
+        removeListener(getPresentation(), controller);
+        return super.setPresentation(rendition);
     }
 
     private void removeListener(P rendition, C handler) {

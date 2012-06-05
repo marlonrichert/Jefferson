@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 Vaadin Ltd.
+ * Copyright 2011, 2012 Vaadin Ltd.
  * 
  * Licensed under the GNU Affero General Public License, Version 3 (the 
  * "License"); you may not use this file except in compliance with the License. 
@@ -15,29 +15,25 @@
  */
 package org.vaadin.jefferson;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentContainer;
+import com.vaadin.ui.*;
 
 /**
  * A {@link View} that can contain child views, rendered as a subclass of
  * {@link com.vaadin.ui.ComponentContainer}.
  * 
- * @param <T>
- *            This view's base rendering class.
  * @author Marlon Richert @ Vaadin
  */
-public abstract class Composite<T extends ComponentContainer> extends View<T> {
-    private Set<View<?>> children = new LinkedHashSet<View<?>>();
+public abstract class Composite<P extends ComponentContainer> extends View<P> {
+    private Set<View<?>> children = new LinkedHashSet<>();
 
     /**
      * Creates a new composite view without children.
      * 
      * @see View#View(String, Class)
      */
-    public Composite(String name, Class<T> base) {
+    public Composite(String name, Class<P> base) {
         super(name, base);
     }
 
@@ -48,7 +44,7 @@ public abstract class Composite<T extends ComponentContainer> extends View<T> {
      *            This composite view's content.
      * @see View#View(String, Class)
      */
-    public Composite(String name, Class<T> base, View<?>... children) {
+    public Composite(String name, Class<P> base, View<?>... children) {
         this(name, base);
         setChildren(children);
     }
@@ -69,7 +65,7 @@ public abstract class Composite<T extends ComponentContainer> extends View<T> {
      *            This composite view's content.
      * @return This composite.
      */
-    public Composite<T> setChildren(View<?>... children) {
+    public Composite<P> setChildren(View<?>... children) {
         for (View<?> child : this.children) {
             child.setParent(null);
         }
@@ -79,11 +75,11 @@ public abstract class Composite<T extends ComponentContainer> extends View<T> {
             child.setParent(this);
         }
 
-        T ownRendition = getRendition();
+        P ownRendition = getPresentation();
         if (ownRendition != null) {
             ownRendition.removeAllComponents();
             for (View<?> child : children) {
-                Component childRendition = child.getRendition();
+                Component childRendition = child.getPresentation();
                 if (childRendition != null) {
                     ownRendition.addComponent(childRendition);
                 }
@@ -94,14 +90,14 @@ public abstract class Composite<T extends ComponentContainer> extends View<T> {
     }
 
     /**
-     * Accepts the given presentation and calls {@link Presentation#visit(View)}
+     * Accepts the given presentation and calls {@link Presenter#visit(View)}
      * for each of this composite's children.
      */
     @Override
-    protected T accept(Presentation presentation) {
-        T rendition = super.accept(presentation);
+    protected P accept(Presenter presenter) {
+        P rendition = super.accept(presenter);
         for (View<?> child : children) {
-            presentation.visit(child);
+            presenter.visit(child);
         }
         return rendition;
     }
@@ -112,13 +108,13 @@ public abstract class Composite<T extends ComponentContainer> extends View<T> {
      * composite's children.
      */
     @Override
-    protected boolean setRendition(T rendition) {
+    protected boolean setPresentation(P rendition) {
         if (rendition == null) {
             for (View<?> child : getChildren()) {
-                child.setRendition(null);
+                child.setPresentation(null);
             }
         }
-        return super.setRendition(rendition);
+        return super.setPresentation(rendition);
     }
 
     /**
@@ -138,10 +134,10 @@ public abstract class Composite<T extends ComponentContainer> extends View<T> {
             return false;
         }
 
-        replacement.setRendition(replacement.createFallback());
+        replacement.setPresentation(replacement.createFallback());
 
-        Component oldRendition = existing.getRendition();
-        Component newRendition = replacement.getRendition();
+        Component oldRendition = existing.getPresentation();
+        Component newRendition = replacement.getPresentation();
 
         if (children.contains(existing)) {
             children.remove(existing);
@@ -151,15 +147,15 @@ public abstract class Composite<T extends ComponentContainer> extends View<T> {
         children.add(replacement);
         replacement.setParent(this);
 
-        Presentation presentation = getPresentation();
-        if (presentation != null) {
-            presentation.visit(replacement);
+        Presenter presenter = getPresenter();
+        if (presenter != null) {
+            presenter.visit(replacement);
         }
         return true;
     }
 
     void update(Component oldRendition, Component newRendition) {
-        T ownRendition = getRendition();
+        P ownRendition = getPresentation();
         if (ownRendition != null) {
             if (oldRendition != null
                     && oldRendition.getParent() == ownRendition) {

@@ -1,7 +1,7 @@
 package org.vaadin.jefferson.presentation;
 
 import org.vaadin.jefferson.Composite;
-import org.vaadin.jefferson.Presentation;
+import org.vaadin.jefferson.Presenter;
 import org.vaadin.jefferson.View;
 
 import com.vaadin.terminal.Sizeable;
@@ -21,7 +21,7 @@ import com.vaadin.ui.TwinColSelect;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.VerticalSplitPanel;
 
-public class SmartPresentation extends Presentation {
+public class SmartPresentation extends Presenter {
     private static final double GOLDEN_RATIO = 1.61803399;
 
     public enum Orientation {

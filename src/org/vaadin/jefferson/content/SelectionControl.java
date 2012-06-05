@@ -33,16 +33,17 @@ public class SelectionControl<T>
     public SelectionControl(String name, Class<T> beanType) {
         super(name, AbstractSelect.class, ValueChangeListener.class);
         this.beanType = beanType;
-        model = new BeanItemContainer<T>(beanType);
+        model = new BeanItemContainer<>(beanType);
         selection = (T[]) Array.newInstance(beanType, 0);
     }
 
-    public void setChoices(T... choices) {
-        setModel(new BeanItemContainer<T>(beanType, Arrays.asList(choices)));
+    @SafeVarargs
+    public final void setChoices(T... choices) {
+        setModel(new BeanItemContainer<>(beanType, Arrays.asList(choices)));
     }
 
     public void setModel(BeanItemContainer<T> model) {
-        AbstractSelect rendition = getRendition();
+        AbstractSelect rendition = getPresentation();
         if (rendition != null) {
             rendition.setContainerDataSource(model);
         }
@@ -53,8 +54,9 @@ public class SelectionControl<T>
         return model;
     }
 
-    public void setSelection(T... selection) {
-        AbstractSelect rendition = getRendition();
+    @SafeVarargs
+    public final void setSelection(T... selection) {
+        AbstractSelect rendition = getPresentation();
         if (rendition != null) {
             switch (selection.length) {
             case 0:
@@ -72,7 +74,7 @@ public class SelectionControl<T>
 
     @SuppressWarnings("unchecked")
     public T[] getSelection() {
-        AbstractSelect rendition = getRendition();
+        AbstractSelect rendition = getPresentation();
         if (rendition != null) {
             Object value = rendition.getValue();
             if (value instanceof Collection<?>) {
@@ -93,7 +95,7 @@ public class SelectionControl<T>
     }
 
     @Override
-    protected AbstractSelect accept(Presentation p) {
+    protected AbstractSelect accept(Presenter p) {
         AbstractSelect rendition = super.accept(p);
         if (rendition instanceof Table) {
             ((Table) rendition).setSelectable(true);

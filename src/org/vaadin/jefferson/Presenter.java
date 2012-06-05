@@ -15,13 +15,10 @@
  */
 package org.vaadin.jefferson;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
+import java.lang.reflect.*;
+import java.security.*;
 
-import com.vaadin.ui.AbstractOrderedLayout;
-import com.vaadin.ui.Component;
+import com.vaadin.ui.*;
 
 /**
  * A mechanism for rendering and styling a content tree, composed of
@@ -38,7 +35,7 @@ import com.vaadin.ui.Component;
  * 
  * @author Marlon Richert @ Vaadin
  */
-public class Presentation {
+public class Presenter {
 
     protected enum MethodName {
         RENDER, STYLE;
@@ -58,7 +55,7 @@ public class Presentation {
     private static final String WHITESPACE = "\\s+";
 
     /**
-     * Renders the given view, calls {@link View#accept(Presentation)} and then
+     * Renders the given view, calls {@link View#accept(Presenter)} and then
      * styles the view's rendition.
      * 
      * @param view
@@ -67,7 +64,7 @@ public class Presentation {
      */
     public <T extends Component> T visit(View<T> view) {
         call(MethodName.RENDER, view);
-        T rendition = view.getRendition();
+        T rendition = view.getPresentation();
 
         view.accept(this);
 
@@ -94,11 +91,11 @@ public class Presentation {
     }
 
     protected <T extends Component> void setRendition(View<T> view, T rendition) {
-        view.setRendition(rendition);
+        view.setPresentation(rendition);
     }
 
     protected <T extends Component> T getRendition(View<T> view) {
-        return view == null ? null : view.getRendition();
+        return view == null ? null : view.getPresentation();
     }
 
     /**
@@ -153,6 +150,7 @@ public class Presentation {
             this.method = method;
         }
 
+        @Override
         public Method run() {
             method.setAccessible(true);
             return method;

@@ -35,7 +35,7 @@ public class TextControl extends Control<AbstractTextField, TextChangeListener> 
     }
 
     public String getText() {
-        AbstractTextField rendition = getRendition();
+        AbstractTextField rendition = getPresentation();
         if (rendition == null) {
             return "";
         }
