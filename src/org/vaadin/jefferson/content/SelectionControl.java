@@ -43,9 +43,9 @@ public class SelectionControl<T>
     }
 
     public void setModel(BeanItemContainer<T> model) {
-        AbstractSelect rendition = getPresentation();
-        if (rendition != null) {
-            rendition.setContainerDataSource(model);
+        AbstractSelect presentation = getPresentation();
+        if (presentation != null) {
+            presentation.setContainerDataSource(model);
         }
         this.model = model;
     }
@@ -56,17 +56,17 @@ public class SelectionControl<T>
 
     @SafeVarargs
     public final void setSelection(T... selection) {
-        AbstractSelect rendition = getPresentation();
-        if (rendition != null) {
+        AbstractSelect presentation = getPresentation();
+        if (presentation != null) {
             switch (selection.length) {
             case 0:
-                rendition.setValue(null);
+                presentation.setValue(null);
                 break;
             case 1:
-                rendition.setValue(selection[0]);
+                presentation.setValue(selection[0]);
                 break;
             default:
-                rendition.setValue(Arrays.asList(selection));
+                presentation.setValue(Arrays.asList(selection));
             }
         }
         this.selection = selection;
@@ -74,9 +74,9 @@ public class SelectionControl<T>
 
     @SuppressWarnings("unchecked")
     public T[] getSelection() {
-        AbstractSelect rendition = getPresentation();
-        if (rendition != null) {
-            Object value = rendition.getValue();
+        AbstractSelect presentation = getPresentation();
+        if (presentation != null) {
+            Object value = presentation.getValue();
             if (value instanceof Collection<?>) {
                 Collection<T> collection = (Collection<T>) value;
                 selection = collection.toArray(
@@ -96,12 +96,12 @@ public class SelectionControl<T>
 
     @Override
     protected AbstractSelect accept(Presenter p) {
-        AbstractSelect rendition = super.accept(p);
-        if (rendition instanceof Table) {
-            ((Table) rendition).setSelectable(true);
+        AbstractSelect presentation = super.accept(p);
+        if (presentation instanceof Table) {
+            ((Table) presentation).setSelectable(true);
         }
         setModel(model);
         setSelection(selection);
-        return rendition;
+        return presentation;
     }
 }

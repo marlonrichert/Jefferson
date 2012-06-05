@@ -18,9 +18,9 @@ package org.vaadin.jefferson;
 import com.vaadin.ui.Component;
 
 /**
- * A content node that allows itself to be rendered as a Vaadin
- * {@link Component}. Convenience implementations for specific types of
- * renditions can be found in the {@link org.vaadin.jefferson.content} package.
+ * A content node that allows itself to be presented as a Vaadin
+ * {@link Component}. Convenience implementations for specific types of views
+ * can be found in the {@link org.vaadin.jefferson.content} package.
  * 
  * @param <P>
  *            This view's base presentation class.
@@ -47,7 +47,7 @@ public abstract class View<P extends Component> {
 
     /**
      * Creates a fallback presentation, in case the {@link Presenter} visiting
-     * this view does not know how to render it.
+     * this view does not know how to present it.
      * 
      * @return A newly-created presentation.
      */
@@ -109,13 +109,8 @@ public abstract class View<P extends Component> {
     }
 
     /**
-     * Sets this view's presentation. Does nothing and returns
-     * <code>false</code> if the given presentation is the same as this view'
-     * current one; otherwise, replaces this view's presentation with the given
-     * one and returns <code>true</code>.
+     * Sets this view's presentation.
      * 
-     * @param presentation
-     *            The new rendering component.
      * @return <code>true</code> if this action resulted in any changes;
      *         <code>false</code> if it did not.
      */
@@ -124,11 +119,12 @@ public abstract class View<P extends Component> {
             return false;
         }
         if (presentation != null) {
-            Class<? extends Component> renditionClass = presentation.getClass();
-            if (!presentationBase.isAssignableFrom(renditionClass)) {
+            Class<? extends Component> presentationClass = presentation
+                    .getClass();
+            if (!presentationBase.isAssignableFrom(presentationClass)) {
                 throw new IllegalArgumentException(
                         presentationBase + " is not a superclass of "
-                                + renditionClass);
+                                + presentationClass);
             }
         }
         if (parent != null) {
@@ -138,11 +134,6 @@ public abstract class View<P extends Component> {
         return true;
     }
 
-    /**
-     * Gets the component that is used for rendering this view.
-     * 
-     * @return The component that renders this content.
-     */
     protected P getPresentation() {
         return presentation;
     }

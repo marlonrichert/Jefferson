@@ -18,8 +18,7 @@ package org.vaadin.jefferson.content;
 import org.vaadin.jefferson.Control;
 
 import com.vaadin.event.FieldEvents.TextChangeListener;
-import com.vaadin.ui.AbstractTextField;
-import com.vaadin.ui.TextField;
+import com.vaadin.ui.*;
 
 public class TextControl extends Control<AbstractTextField, TextChangeListener> {
 
@@ -29,17 +28,17 @@ public class TextControl extends Control<AbstractTextField, TextChangeListener> 
 
     @Override
     public AbstractTextField createFallback() {
-        TextField rendition = new TextField();
-        rendition.setInputPrompt(getName());
-        return rendition;
+        TextField presentation = new TextField();
+        presentation.setInputPrompt(getName());
+        return presentation;
     }
 
     public String getText() {
-        AbstractTextField rendition = getPresentation();
-        if (rendition == null) {
+        AbstractTextField presentation = getPresentation();
+        if (presentation == null) {
             return "";
         }
-        Object value = rendition.getValue();
+        Object value = presentation.getValue();
         return value == null ? "" : "" + value;
     }
 }

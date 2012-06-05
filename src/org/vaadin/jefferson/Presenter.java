@@ -24,8 +24,8 @@ import com.vaadin.ui.*;
  * A mechanism for rendering and styling a content tree, composed of
  * {@link Composite}s and descendant {@link View}s.
  * <p>
- * To define your own renditions and styles for specific view classes, inherit
- * from this class and create methods with the following signatures, replacing
+ * To define your own presentations for specific view classes, inherit from this
+ * class and create methods with the following signatures, replacing
  * <code>T</code> with the type of view you want to render or style:
  * 
  * <pre>

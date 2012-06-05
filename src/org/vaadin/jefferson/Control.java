@@ -21,7 +21,7 @@ import com.vaadin.ui.*;
 import com.vaadin.ui.Field;
 
 /**
- * A {@link View} that can register a controller object to its rendition.
+ * A {@link View} that can register a controller to its presentation.
  * 
  * @param <C>
  *            The interface of this control's controller.
@@ -48,9 +48,9 @@ public abstract class Control<P extends Component, C> extends View<P> {
     }
 
     public void setController(C listener) {
-        P rendition = getPresentation();
-        removeListener(rendition, this.controller);
-        addListener(rendition, listener);
+        P presentation = getPresentation();
+        removeListener(presentation, this.controller);
+        addListener(presentation, listener);
         this.controller = listener;
     }
 
@@ -60,21 +60,21 @@ public abstract class Control<P extends Component, C> extends View<P> {
 
     @Override
     protected P accept(Presenter presenter) {
-        P rendition = super.accept(presenter);
+        P presentation = super.accept(presenter);
         setController(controller);
-        return rendition;
+        return presentation;
     }
 
     @Override
-    protected boolean setPresentation(P rendition) {
+    protected boolean setPresentation(P presentation) {
         removeListener(getPresentation(), controller);
-        return super.setPresentation(rendition);
+        return super.setPresentation(presentation);
     }
 
-    private void removeListener(P rendition, C handler) {
+    private void removeListener(P presentation, C listener) {
         try {
-            if (rendition != null && handler != null) {
-                removeListener.invoke(rendition, handler);
+            if (presentation != null && listener != null) {
+                removeListener.invoke(presentation, listener);
             }
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
@@ -83,17 +83,17 @@ public abstract class Control<P extends Component, C> extends View<P> {
         }
     }
 
-    private void addListener(P rendition, C handler) {
+    private void addListener(P presentation, C listener) {
         try {
-            if (rendition != null) {
-                if (rendition instanceof AbstractComponent) {
-                    ((AbstractComponent) rendition).setImmediate(true);
+            if (presentation != null) {
+                if (presentation instanceof AbstractComponent) {
+                    ((AbstractComponent) presentation).setImmediate(true);
                 }
-                if (rendition instanceof Field) {
-                    ((Field) rendition).setWriteThrough(true);
+                if (presentation instanceof Field) {
+                    ((Field) presentation).setWriteThrough(true);
                 }
-                if (handler != null) {
-                    addListener.invoke(rendition, handler);
+                if (listener != null) {
+                    addListener.invoke(presentation, listener);
                 }
             }
         } catch (IllegalAccessException e) {

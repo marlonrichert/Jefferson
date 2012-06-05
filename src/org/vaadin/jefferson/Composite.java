@@ -20,7 +20,7 @@ import java.util.*;
 import com.vaadin.ui.*;
 
 /**
- * A {@link View} that can contain child views, rendered as a subclass of
+ * A {@link View} that can contain child views, presented as a subclass of
  * {@link com.vaadin.ui.ComponentContainer}.
  * 
  * @author Marlon Richert @ Vaadin
@@ -75,13 +75,13 @@ public abstract class Composite<P extends ComponentContainer> extends View<P> {
             child.setParent(this);
         }
 
-        P ownRendition = getPresentation();
-        if (ownRendition != null) {
-            ownRendition.removeAllComponents();
+        P ownPresentation = getPresentation();
+        if (ownPresentation != null) {
+            ownPresentation.removeAllComponents();
             for (View<?> child : children) {
-                Component childRendition = child.getPresentation();
-                if (childRendition != null) {
-                    ownRendition.addComponent(childRendition);
+                Component childPresentation = child.getPresentation();
+                if (childPresentation != null) {
+                    ownPresentation.addComponent(childPresentation);
                 }
             }
         }
@@ -95,26 +95,26 @@ public abstract class Composite<P extends ComponentContainer> extends View<P> {
      */
     @Override
     protected P accept(Presenter presenter) {
-        P rendition = super.accept(presenter);
+        P presentation = super.accept(presenter);
         for (View<?> child : children) {
             presenter.visit(child);
         }
-        return rendition;
+        return presentation;
     }
 
     /**
-     * Sets this composite's rendition. If the given rendition is
-     * <code>null</code>, it will also clear the rendition of each of this
+     * Sets this composite's presentation. If the given presentation is
+     * <code>null</code>, it will also clear the presentation of each of this
      * composite's children.
      */
     @Override
-    protected boolean setPresentation(P rendition) {
-        if (rendition == null) {
+    protected boolean setPresentation(P presentation) {
+        if (presentation == null) {
             for (View<?> child : getChildren()) {
                 child.setPresentation(null);
             }
         }
-        return super.setPresentation(rendition);
+        return super.setPresentation(presentation);
     }
 
     /**
@@ -136,14 +136,14 @@ public abstract class Composite<P extends ComponentContainer> extends View<P> {
 
         replacement.setPresentation(replacement.createFallback());
 
-        Component oldRendition = existing.getPresentation();
-        Component newRendition = replacement.getPresentation();
+        Component oldPresentation = existing.getPresentation();
+        Component newPresentation = replacement.getPresentation();
 
         if (children.contains(existing)) {
             children.remove(existing);
             existing.setParent(null);
         }
-        update(oldRendition, newRendition);
+        update(oldPresentation, newPresentation);
         children.add(replacement);
         replacement.setParent(this);
 
@@ -154,18 +154,19 @@ public abstract class Composite<P extends ComponentContainer> extends View<P> {
         return true;
     }
 
-    void update(Component oldRendition, Component newRendition) {
-        P ownRendition = getPresentation();
-        if (ownRendition != null) {
-            if (oldRendition != null
-                    && oldRendition.getParent() == ownRendition) {
-                if (newRendition != null) {
-                    ownRendition.replaceComponent(oldRendition, newRendition);
+    void update(Component oldPresentation, Component newPresentation) {
+        P ownPresentation = getPresentation();
+        if (ownPresentation != null) {
+            if (oldPresentation != null
+                    && oldPresentation.getParent() == ownPresentation) {
+                if (newPresentation != null) {
+                    ownPresentation.replaceComponent(oldPresentation,
+                            newPresentation);
                 } else {
-                    ownRendition.removeComponent(oldRendition);
+                    ownPresentation.removeComponent(oldPresentation);
                 }
-            } else if (newRendition != null) {
-                ownRendition.addComponent(newRendition);
+            } else if (newPresentation != null) {
+                ownPresentation.addComponent(newPresentation);
             }
         }
     }
